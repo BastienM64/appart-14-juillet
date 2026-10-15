@@ -154,7 +154,7 @@ textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;font:1
         <button class="btn" id="bReset">Vue d'ensemble</button>
         <button class="btn primary" id="bWalk">Visiter à hauteur d'homme</button>
       </div>
-      <div class="hint" id="hint">Glisser pour tourner · pincer pour zoomer · toucher une pièce, un mur ou un meuble · faire glisser un meuble pour le déplacer · Z Q S D pour se déplacer</div>
+      <div class="hint" id="hint">Glisser pour tourner · pincer pour zoomer · toucher une pièce, un mur ou un meuble · double-clic sur un meuble pour le sélectionner, puis glisser pour le déplacer · Z Q S D pour se déplacer</div>
       <div id="walkHud" hidden>
         <div class="cross"></div>
         <div class="measure" id="measure" aria-live="off"></div>
@@ -985,7 +985,7 @@ function enterWalk(){
   let start=[1.2,1.0]; if(w){ const c=ptAt(w,door.at+door.w/2), f=frame(w); start=[c[0]+f.n[0]*0.9,c[1]+f.n[1]*0.9]; }
   walk={x:start[0],y:start[1],yaw:Math.PI,pitch:-0.05,eye:1.62};
   if(cut){ cut=false; $("bCut").setAttribute("aria-pressed",false); }
-  controls.enabled=false; camera.fov=68; camera.near=0.05; camera.far=25; camera.updateProjectionMatrix(); updHQ();
+  controls.enabled=false; camera.fov=78; camera.near=0.05; camera.far=25; camera.updateProjectionMatrix(); updHQ();
   stage.classList.add("full"); document.body.style.overflow="hidden";
   try{ const rq=stage.requestFullscreen||stage.webkitRequestFullscreen; if(rq){ const r=rq.call(stage,{navigationUI:"hide"}); if(r&&r.catch) r.catch(()=>{}); } }catch(e){}
   setSceneBg(); build(); const p=nearestFree(walk.x,walk.y); walk.x=p[0]; walk.y=p[1];
@@ -1148,12 +1148,16 @@ new MutationObserver(()=>{setSceneBg();renderPlan();}).observe(document.document
 const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(), floorPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hitPt=new THREE.Vector3();
 let down=null, drag=null;
 function setRay(e){ const r=cv.getBoundingClientRect(); ndc.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1); ray.setFromCamera(ndc,camera); }
+// un meuble se sélectionne par double-clic (ou double appui) ; une fois sélectionné, on le fait glisser
+let lastTap={id:null,t:0};
+function dblTap(id){ const now=performance.now(), ok=lastTap.id===id&&now-lastTap.t<500; lastTap=ok?{id:null,t:0}:{id,t:now}; return ok; }
 function hitMeuble(){ const h=ray.intersectObjects(Object.values(furnObjs),true)[0]; return h?h.object.userData.meuble:null; }
 stage.addEventListener("pointerdown",e=>{
   if(e.target!==cv) return;
   if(walk){ look={id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),moved:0,mouse:e.pointerType==="mouse"}; if(look.mouse) lockMouse(); e.stopPropagation(); return; }
   down=[e.clientX,e.clientY]; setRay(e);
   const id=hitMeuble();
+  if(id && !isSel("meuble",id)){ if(!dblTap(id)) return; sel={kind:"meuble",id}; build(); renderPlan(); renderSide(); }
   if(id && !locked()){ const m=meubles().find(x=>x.id===id); if(!m) return;
     ray.ray.intersectPlane(floorPlane,hitPt);
     drag={id, m, dx:m.x-hitPt.x, dy:m.y-hitPt.z, moved:false, pid:e.pointerId};
@@ -1179,7 +1183,7 @@ window.addEventListener("pointerup",e=>{
   if(!down || e.target!==cv) { down=null; return; }
   const tap=Math.hypot(e.clientX-down[0],e.clientY-down[1])<=6; down=null; if(!tap) return;
   setRay(e);
-  const mid=hitMeuble(); if(mid){ select("meuble",mid,false); return; }
+  const mid=hitMeuble(); if(mid) return;
   { const eh=ray.intersectObjects(Object.values(elemObjs).flat(),true)[0], wh2=ray.intersectObjects(wallMeshes)[0];
     if(eh && (!wh2 || eh.distance<wh2.distance)){ select("elem",eh.object.userData.elem,false); return; } }
   const dh=ray.intersectObjects(Object.values(doorObjs).map(d=>d.pivot),true)[0], wh=ray.intersectObjects(wallMeshes)[0];
@@ -1274,7 +1278,7 @@ function svgPt(e){ const svg=planEl.querySelector("svg"); const p=svg.createSVGP
 planEl.addEventListener("pointerdown",e=>{
   const g=e.target.closest("[data-meuble]");
   if(g){ const id=g.dataset.meuble, m=meubles().find(x=>x.id===id); if(!m) return;
-    if(!isSel("meuble",id)){ sel={kind:"meuble",id}; renderSide(); renderPlan(); }
+    if(!isSel("meuble",id)){ if(!dblTap(id)) return; sel={kind:"meuble",id}; build(); renderSide(); renderPlan(); }
     if(locked()) return;
     const p=svgPt(e); pdrag={id,m,dx:m.x-p.x,dy:m.y-p.y,moved:false,pid:e.pointerId}; e.preventDefault(); return; }
 });
