@@ -94,5 +94,7 @@ window.APPART = {
   P.nom = "Projet";
   // 15/10 — radiateurs déposés dans le projet
   P.elements = P.elements.filter(e => e.type !== "radiateur");
+  // 15/10 — porte du cellier décalée vers la droite, là où le rampant laisse passer une porte de ~1,83 m
+  Object.assign(P.ouvertures.find(o => o.id === "p_cel"), { at: 1.53 });
   window.APPART.variantes.projet = P;
 })();
