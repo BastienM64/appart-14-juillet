@@ -6,7 +6,6 @@
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>Appartement 14 Juillet — projet de rénovation</title>
 <meta name="description" content="Maquette 3D et plan du projet de rénovation de l'appartement rue du 14 Juillet.">
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap">
 <style>
 /* Layout : outil de chantier — en-tête, maquette 3D ou plan au centre, panneaux dessous (mobile) ou à droite (desktop) */
@@ -122,9 +121,9 @@ textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;font:1
 .eye{position:absolute;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px;pointer-events:auto}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
-
 </head>
 <body>
+
 <div class="app">
   <header>
     <div>
@@ -241,7 +240,7 @@ const PEINTURES = [
   ["Vert sauge","#b4bea4"],["Vert olive","#7c8465"],["Bleu brume","#b8c6cc"],["Bleu nuit","#2f3b4b"],["Terracotta","#b5705a"],["Ocre","#c79f58"],["Rose poudré","#dbbfb4"]
 ];
 const TEINTES = [
-  ["Blanc","#f2f1ec"],["Chêne clair","#cfae84"],["Chêne","#a7804f"],["Noyer","#6b4a33"],["Gris clair","#c9cbc8"],["Anthracite","#3a3d40"],["Noir","#1e1f21"],
+  ["Blanc","#f2f1ec"],["Chêne clair","#cfae84"],["Chêne","#a7804f"],["Noyer","#6b4a33"],["Noyer européen","#8a6b55"],["Gris clair","#c9cbc8"],["Anthracite","#3a3d40"],["Noir","#1e1f21"],
   ["Lin","#d9cdb8"],["Vert sauge","#9aa88c"],["Bleu nuit","#2f3b4b"],["Terracotta","#b0694f"],["Moutarde","#c9a142"],["Bleu canard","#2f6468"],["Rose","#d5aea2"]
 ];
 const SOLS = {
@@ -259,6 +258,7 @@ const SOLS = {
 // dimensions en mètres : largeur w, profondeur d, hauteur h. Le dos du meuble est côté "haut" du plan à 0°.
 const CATALOGUE = [
   {groupe:"Cuisine", items:[
+    {t:"cuisine4",  nom:"Cuisine 4 modules",    w:2.45,d:0.60,h:2.15,c:"#2a2c31", g:"cuisine"},
     {t:"plan",      nom:"Plan de travail",      w:1.20,d:0.62,h:0.90,c:"#f2f1ec", g:"plan"},
     {t:"ilot",      nom:"Îlot central",         w:1.60,d:0.90,h:0.90,c:"#a7804f", g:"plan"},
     {t:"bar",       nom:"Bar",                  w:1.40,d:0.50,h:1.05,c:"#3a3d40", g:"bar"},
@@ -420,8 +420,8 @@ const WOOD_SIZE=[2.6,1.3], woodCache={}; // la photo couvre environ 2,6 × 1,3 m
 function woodRep(t){ const c=t.clone(); c.needsUpdate=true; c.repeat.set(1/WOOD_SIZE[0],1/WOOD_SIZE[1]); return c; }
 // matières Poly Haven (CC0) : placage noyer et stuc blanc
 const PH={ready:false};
-(function(){ const L=new THREE.TextureLoader(), list={nd:"tex/noyer_diff.jpg",nn:"tex/noyer_nor.jpg",nr:"tex/noyer_rough.jpg",sd:"tex/stuc_diff.jpg",sn:"tex/stuc_nor.jpg",sr:"tex/stuc_rough.jpg",cd:"tex/cuir_diff.jpg",cn:"tex/cuir_nor.jpg",cr:"tex/cuir_rough.jpg",fd:"tex/frigo_diff.jpg",fn:"tex/frigo_nor.jpg",fr:"tex/frigo_rough.jpg"}; let n=0, N=Object.keys(list).length;
-  for(const k in list) L.load(list[k],t=>{ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=8; if(k==="nd"||k==="sd"||k==="cd"||k==="fd") t.encoding=THREE.sRGBEncoding; PH[k]=t;
+(function(){ const L=new THREE.TextureLoader(), list={nd:"tex/noyer_diff.jpg",nn:"tex/noyer_nor.jpg",nr:"tex/noyer_rough.jpg",sd:"tex/stuc_diff.jpg",sn:"tex/stuc_nor.jpg",sr:"tex/stuc_rough.jpg",cd:"tex/cuir_diff.jpg",cn:"tex/cuir_nor.jpg",cr:"tex/cuir_rough.jpg",fd:"tex/frigo_diff.jpg",fn:"tex/frigo_nor.jpg",fr:"tex/frigo_rough.jpg",ed:"tex/noyereu_diff.jpg",en:"tex/noyereu_nor.jpg",er:"tex/noyereu_rough.jpg",vd:"tex/velours_diff.jpg",vn:"tex/velours_nor.jpg",vr:"tex/velours_rough.jpg"}; let n=0, N=Object.keys(list).length;
+  for(const k in list) L.load(list[k],t=>{ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=8; if(k==="nd"||k==="sd"||k==="cd"||k==="fd"||k==="ed"||k==="vd") t.encoding=THREE.sRGBEncoding; PH[k]=t;
       if(++n===N){ PH.ready=true; for(const c in texCache) delete texCache[c]; for(const c in woodCache) delete woodCache[c]; for(const c in matCache) if(c[0]==="W"||c[0]==="F") delete matCache[c]; try{ build(); }catch(e){} } },undefined,()=>{}); })();
 function phRep(t,sx,sy){ const c=t.clone(); c.needsUpdate=true; c.repeat.set(sx,sy); return c; }
 // parquet noyer : le placage est découpé en lames de 18 cm décalées, avec joints
@@ -564,21 +564,43 @@ function addBox(par,x0,x1,y0,y1,z0,z1,m){ const g=new THREE.BoxGeometry(x1-x0,z1
 /* meubles : chaque forme est construite centrée, dos vers -z */
 function furnMesh(m){
   const g=new THREE.Group(), w=m.w, d=m.d, h=m.h, x0=-w/2, x1=w/2, z0=-d/2, z1=d/2, kind=(CAT[m.t]||{}).g||"box", sel=isSel("meuble",m.id);
-  const WOODT={"#cfae84":"#fff1dc","#a7804f":"#e7c9a6","#6b4a33":"#a07a62"};
+  // meubles en bois : placage de noyer européen (Poly Haven), teinté selon la teinte choisie
+  const WOODT={"#cfae84":"#fff4e6","#a7804f":"#e9d2b8","#6b4a33":"#a6876f","#8a6b55":"#ffffff"};
   const M=(c,r=.8)=>{ const wt=PH.ready&&WOODT[c.toLowerCase()];
-    const mm=wt?new THREE.MeshStandardMaterial({color:lin(wt),map:PH.nd,normalMap:PH.nn,normalScale:new THREE.Vector2(.4,.4),roughnessMap:PH.nr,roughness:.9,envMapIntensity:.8}):new THREE.MeshStandardMaterial({color:lin(c),roughness:r}); if(sel){ mm.emissive=new THREE.Color(SEL_EMISSIVE); mm.emissiveIntensity=.28; } return mm; };
+    const mm=wt?new THREE.MeshStandardMaterial({color:lin(wt),map:phRep(PH.ed,1/0.9,1/0.9),normalMap:phRep(PH.en,1/0.9,1/0.9),normalScale:new THREE.Vector2(.45,.45),roughnessMap:phRep(PH.er,1/0.9,1/0.9),roughness:1,envMapIntensity:.7}):new THREE.MeshStandardMaterial({color:lin(c),roughness:r}); if(sel){ mm.emissive=new THREE.Color(SEL_EMISSIVE); mm.emissiveIntensity=.28; } return mm; };
   const body=M(m.c), light=M(hexShade(m.c,22)), dark=M(hexShade(m.c,-30)), top=M("#dcdad4",.4), white=M("#f6f5f1"), leg=M("#2b2d30",.5);
   const B=(a,b,c,dd,e,f,mm)=>{ const me=addBox(g,a,b,c,dd,e,f,mm); worldUV(me.geometry); return me; };
   const leather=c=>{ const mm=PH.ready?new THREE.MeshStandardMaterial({color:lin(c),map:phRep(PH.cd,1/0.7,1/0.7),normalMap:phRep(PH.cn,1/0.7,1/0.7),normalScale:new THREE.Vector2(.8,.8),roughnessMap:phRep(PH.cr,1/0.7,1/0.7),roughness:1,envMapIntensity:.7}):new THREE.MeshStandardMaterial({color:lin(c),roughness:.55});
+    if(sel){ mm.emissive=new THREE.Color(SEL_EMISSIVE); mm.emissiveIntensity=.28; } return mm; };
+  const fabric=c=>{ const mm=PH.ready?new THREE.MeshStandardMaterial({color:lin(c),map:phRep(PH.vd,1/0.35,1/0.35),normalMap:phRep(PH.vn,1/0.35,1/0.35),normalScale:new THREE.Vector2(.9,.9),roughnessMap:phRep(PH.vr,1/0.35,1/0.35),roughness:1,envMapIntensity:.4}):new THREE.MeshStandardMaterial({color:lin(c),roughness:.95});
     if(sel){ mm.emissive=new THREE.Color(SEL_EMISSIVE); mm.emissiveIntensity=.28; } return mm; };
   const steel=()=>{ const mm=PH.ready?new THREE.MeshStandardMaterial({color:lin("#e6e8ea"),map:phRep(PH.fd,1/0.9,1/0.9),normalMap:phRep(PH.fn,1/0.9,1/0.9),normalScale:new THREE.Vector2(.3,.3),roughnessMap:phRep(PH.fr,1/0.9,1/0.9),roughness:1.6,metalness:1,envMapIntensity:1.1}):new THREE.MeshStandardMaterial({color:lin("#c9ccce"),roughness:.3,metalness:.9});
     if(sel){ mm.emissive=new THREE.Color(SEL_EMISSIVE); mm.emissiveIntensity=.2; } return mm; };
   if(kind==="plan"){ B(x0+.01,x1-.01,z0,z1-.03,0.10,h-.04,body); B(x0,x1,z0,z1,h-.04,h,top); B(x0+.01,x1-.01,z0,z1-.08,0,0.10,dark); }
   else if(kind==="bar"){ B(x0,x1,z0,z0+0.12,0,h-.04,body); B(x0,x1,z0,z1,h-.04,h,top); }
   else if(kind==="frigo"){ const st=steel(), seam=M("#2a2c2e",.6), hd=new THREE.MeshStandardMaterial({color:lin("#b8bcc0"),roughness:.25,metalness:1,envMapIntensity:1.2}), split=h*0.64;
-    B(x0,x1,z0,z1-0.06,0,h,M("#d0d2d4",.5)); B(x0+0.002,x1-0.002,z1-0.06,z1,0.06,split-0.006,st); B(x0+0.002,x1-0.002,z1-0.06,z1,split+0.006,h-0.005,st);
+    B(x0,x1,z0,z1-0.06,0,h,st); B(x0+0.002,x1-0.002,z1-0.06,z1,0.06,split-0.006,st); B(x0+0.002,x1-0.002,z1-0.06,z1,split+0.006,h-0.005,st);
     B(x0+0.002,x1-0.002,z1-0.055,z1-0.005,0,0.06,seam); B(x0+0.002,x1-0.002,z1-0.06,z1-0.01,split-0.006,split+0.006,seam);
     const hx=x1-0.07; for(const [a,b2] of [[split+0.12,Math.min(h-0.12,split+0.12+0.42)],[split-0.38,split-0.1]]){ B(hx-0.012,hx+0.012,z1+0.025,z1+0.045,a,b2,hd); B(hx-0.01,hx+0.01,z1,z1+0.025,a+0.02,a+0.05,hd); B(hx-0.01,hx+0.01,z1,z1+0.025,b2-0.05,b2-0.02,hd); } }
+  else if(kind==="cuisine"){
+    const mw=w/4, bh=0.9, ct=0.03, fr=body, carc=M(hexShade(m.c,-12),.6), plan=M("#d9d8d3",.35), inox=new THREE.MeshStandardMaterial({color:lin("#c9ccce"),roughness:.28,metalness:1,envMapIntensity:1.1}),
+      inoxD=new THREE.MeshStandardMaterial({color:lin("#8d9093"),roughness:.35,metalness:1}), verre=new THREE.MeshStandardMaterial({color:lin("#0d0e10"),roughness:.08,metalness:.2,envMapIntensity:1.2}), cred=M("#f3f3f1",.3);
+    const zf=Math.min(z1,z0+0.6), uz0=Math.min(1.45,h-0.5), uz1=h, ud=Math.min(0.35,d);
+    B(x0+.01,x1-.01,z0+0.03,zf-0.06,0,0.10,leg); B(x0,x1,z0,zf-0.02,0.10,bh-ct,carc);
+    for(let i=0;i<4;i++){ const a=x0+i*mw, b=a+mw, xm=(a+b)/2; B(a+.002,b-.002,zf-.02,zf,.103,bh-ct-.003,fr); B(xm-Math.min(.12,mw*.35),xm+Math.min(.12,mw*.35),zf,zf+.02,bh-ct-.075,bh-ct-.06,inox); }
+    B(x0,x1,z0,zf+0.02,bh-ct,bh,plan);
+    // plaque vitrocéramique, module 2
+    { const cx=x0+mw*1.5, cz=(z0+zf)/2, hw=Math.min(.29,mw/2-.03); B(cx-hw,cx+hw,cz-.25,cz+.25,bh,bh+.006,verre);
+      for(const [ox,oz,r] of [[-.14,-.11,.09],[.14,-.11,.07],[-.14,.12,.07],[.14,.12,.09]]){ const ring=new THREE.Mesh(new THREE.RingGeometry(r*.82,r,40),new THREE.MeshBasicMaterial({color:0x55585c})); ring.rotation.x=-Math.PI/2; ring.position.set(cx+ox*hw/.29,bh+.0075,cz+oz); g.add(ring); } }
+    // évier inox et robinet, module 4 (le plus à droite)
+    { const cx=x0+mw*3.5, cz=(z0+zf)/2+.02, hw=Math.min(.27,mw/2-.03); B(cx-hw,cx+hw,cz-.22,cz+.2,bh,bh+.004,inox); B(cx-hw+.04,cx+.04,cz-.18,cz+.16,bh-.16,bh+.0045,inoxD);
+      const tx=cx-hw/2+.02; B(tx-.018,tx+.018,z0+.05,z0+.086,bh,bh+.3,inox); B(tx-.014,tx+.014,z0+.05,z0+.27,bh+.27,bh+.3,inox); B(tx-.012,tx+.012,z0+.25,z0+.27,bh+.2,bh+.28,inox); }
+    // crédence, meubles hauts, hotte au-dessus de la plaque
+    if(h>1.6){ B(x0,x1,z0,z0+.012,bh,uz0,cred);
+      B(x0,x0+mw,z0,z0+ud,uz0,uz1,carc); B(x0+.002,x0+mw-.002,z0+ud,z0+ud+.02,uz0+.003,uz1-.003,fr);
+      const hz=Math.min(uz1-.25,1.7); B(x0+mw,x0+2*mw,z0,z0+ud,hz,uz1,carc); B(x0+mw+.002,x0+2*mw-.002,z0+ud,z0+ud+.02,hz+.003,uz1-.003,fr); B(x0+mw+.02,x0+2*mw-.02,z0,z0+ud+.1,hz-.07,hz,inox);
+      B(x0+2*mw,x1,z0,z0+ud,uz0,uz1,carc); for(const a of [x0+2*mw,x0+3*mw]) B(a+.002,a+mw-.002,z0+ud,z0+ud+.02,uz0+.003,uz1-.003,fr);
+      for(const a of [x0,x0+2*mw,x0+3*mw]) B(a+mw/2-.1,a+mw/2+.1,z0+ud+.02,z0+ud+.035,uz0+.05,uz0+.065,inox); } }
   else if(kind==="tele"){ const frame=M("#151617",.4), screen=new THREE.MeshStandardMaterial({color:lin("#0b0c0e"),roughness:.12,metalness:.3,envMapIntensity:1.3}), th=Math.min(0.05,d);
     if(d>0.1){ B(-0.15,0.15,z1-0.2,z1-0.02,0,0.015,frame); B(-0.03,0.03,-0.02,0.0,0.015,0.12,frame); }
     const zc=d>0.1?0:z0+th/2; B(x0,x1,zc-th/2,zc+th/2,d>0.1?0.12:0,h,frame); const sc=B(x0+0.012,x1-0.012,zc+th/2-0.001,zc+th/2+0.002,(d>0.1?0.12:0)+0.012,h-0.012,screen); sc.castShadow=false; }
@@ -586,9 +608,10 @@ function furnMesh(m){
   else if(kind==="angle"){ const dp=Math.min(0.92,d), body=leather(m.c), light=leather(hexShade(m.c,10)); B(x0,x1,z0,z0+dp,0.06,0.40,body); B(x1-dp,x1,z0+dp,z1,0.06,0.40,body);
     B(x0+0.18,x1-0.02,z0+0.2,z0+dp,0.40,0.47,light); B(x1-dp+0.02,x1-0.02,z0+dp,z1-0.02,0.40,0.47,light);
     B(x0,x1,z0,z0+0.2,0.40,h,body); B(x0,x0+0.18,z0,z0+dp,0.40,0.62,body); B(x0+.04,x1-.04,z0+.04,z0+dp-.04,0,0.06,leg); }
-  else if(kind==="lit"){ B(x0,x1,z0,z1,0.08,0.32,body); B(x0+.02,x1-.02,z0+.08,z1-.02,0.32,0.54,white); B(x0,x1,z0,z0+0.07,0,1.0,body);
-    const np=w>1.2?2:1, pw=(w-0.12-(np-1)*0.06)/np; for(let i=0;i<np;i++){ const px=x0+0.06+i*(pw+0.06); B(px,px+pw,z0+0.12,z0+0.45,0.54,0.66,white); }
-    B(x0+.01,x1-.01,z0+0.6,z1-0.01,0.54,0.6,M(hexShade(m.c===("#f2f1ec")?"#9aa88c":m.c,0))); B(x0+.04,x1-.04,z0+.04,z1-.04,0,0.08,leg); }
+  else if(kind==="lit"){ const linge=fabric("#f3f1ec"), couette=fabric(m.c===("#f2f1ec")?"#9aa88c":m.c);
+    B(x0,x1,z0,z1,0.08,0.32,body); B(x0+.02,x1-.02,z0+.08,z1-.02,0.32,0.54,linge); B(x0,x1,z0,z0+0.07,0,1.0,body);
+    const np=w>1.2?2:1, pw=(w-0.12-(np-1)*0.06)/np; for(let i=0;i<np;i++){ const px=x0+0.06+i*(pw+0.06); B(px,px+pw,z0+0.12,z0+0.45,0.54,0.66,linge); }
+    B(x0+.01,x1-.01,z0+0.6,z1-0.01,0.54,0.6,couette); B(x0+.01,x1-.01,z1-0.012,z1+0.002,0.3,0.6,couette); B(x0+.04,x1-.04,z0+.04,z1-.04,0,0.08,leg); }
   else if(kind==="table"){ B(x0,x1,z0,z1,h-0.04,h,body); const t=0.05, i=0.04; for(const [lx,lz] of [[x0+i,z0+i],[x1-i-t,z0+i],[x0+i,z1-i-t],[x1-i-t,z1-i-t]]) B(lx,lx+t,lz,lz+t,0,h-0.04,dark); }
   else if(kind==="chaise"){ B(x0,x1,z0,z1,0.43,0.47,body); for(const [lx,lz] of [[x0+.02,z0+.02],[x1-.05,z0+.02],[x0+.02,z1-.05],[x1-.05,z1-.05]]) B(lx,lx+.03,lz,lz+.03,0,0.43,leg); B(x0,x1,z0,z0+0.04,0.47,h,body); }
   else if(kind==="tabouret"){ B(x0+.03,x1-.03,z0+.03,z1-.03,h-0.04,h,body); for(const [lx,lz] of [[x0+.05,z0+.05],[x1-.08,z0+.05],[x0+.05,z1-.08],[x1-.08,z1-.08]]) B(lx,lx+.03,lz,lz+.03,0,h-0.04,leg); }
@@ -956,8 +979,11 @@ function furnSymbol(m,ink,muted,pan,selC){
   if(kind==="box" && m.h>1.2){ s+=L(x0,z0,x0+w,z0+d); s+=L(x0+w,z0,x0,z0+d); }
   const label=CAT[m.t]?CAT[m.t].nom:"Meuble";
   if(kind==="tele") s+=`<text x="0" y="0.04" text-anchor="middle" font-size="0.11" font-weight="600" fill="${st}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>TV</text>`;
+  if(kind==="cuisine"){ const mw=w/4, zf=Math.min(d,0.6)+z0; for(let i=1;i<4;i++) s+=L(x0+i*mw,z0,x0+i*mw,zf);
+    s+=R(x0+mw*3.5-0.2,z0+0.12,0.32,0.34); for(const [ox,oz] of [[-.14,-.11],[.14,-.11],[-.14,.12],[.14,.12]]) s+=`<circle cx="${x0+mw*1.5+ox}" cy="${(z0+zf)/2+oz}" r="0.07" fill="none" stroke="${muted}" stroke-width="0.01"/>`;
+    s+=`<rect x="${x0}" y="${z0}" width="${w}" height="${Math.min(.35,d)}" fill="none" stroke="${muted}" stroke-width="0.01" stroke-dasharray="0.05 0.04"/>`; }
   if(kind==="frigo") s+=`<text x="0" y="0.04" text-anchor="middle" font-size="0.1" fill="${ink}">Frigo</text>`;
-  if(kind!=="clim" && kind!=="tele" && kind!=="frigo" && w>=0.7 && d>=0.4) s+=`<text x="0" y="${Math.min(d/2-0.08,0.06)}" text-anchor="middle" font-size="0.12" fill="${ink}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>${label}</text>`;
+  if(kind!=="clim" && kind!=="tele" && kind!=="frigo" && kind!=="cuisine" && w>=0.7 && d>=0.4) s+=`<text x="0" y="${Math.min(d/2-0.08,0.06)}" text-anchor="middle" font-size="0.12" fill="${ink}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>${label}</text>`;
   return s+"</g>";
 }
 function renderPlan(){
@@ -1242,6 +1268,5 @@ loop();
 })();
 })();
 </script>
-
 </body>
 </html>

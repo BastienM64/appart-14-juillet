@@ -1,4 +1,4 @@
-// Projet figé — exporté depuis la maquette de travail le 14/10/2026
+// Projet figé — exporté depuis la maquette de travail le 15/10/2026
 window.PROJET_FIGE = {
  "v": 2,
  "choix": {
@@ -6,11 +6,11 @@ window.PROJET_FIGE = {
   "projet": {
    "ch1": {
     "murs": "#f4f4f1",
-    "sol": "chene-clair"
+    "sol": "chene-fonce"
    },
    "ch2": {
     "murs": "#f4f4f1",
-    "sol": "chene-clair"
+    "sol": "chene-fonce"
    },
    "sas": {
     "murs": "#ddd2bf",
@@ -22,7 +22,10 @@ window.PROJET_FIGE = {
    },
    "sejour": {
     "murs": "#f4f4f1",
-    "sol": "chene-clair"
+    "sol": "chene-fonce"
+   },
+   "wc": {
+    "murs": "#f4f4f1"
    }
   }
  },
@@ -38,13 +41,13 @@ window.PROJET_FIGE = {
    {
     "c": "#2f6468",
     "d": 0.62,
-    "h": 2.1,
+    "h": 1.8,
     "id": "mmv8hdaoa741",
-    "rot": 0,
+    "rot": 90,
     "t": "colonne",
     "w": 0.6,
-    "x": 2.2,
-    "y": 3.7
+    "x": 2.145,
+    "y": 3.76
    },
    {
     "c": "#d9cdb8",
@@ -55,18 +58,18 @@ window.PROJET_FIGE = {
     "t": "angle",
     "w": 2.4,
     "x": 5.7,
-    "y": 0.9
+    "y": 0.805
    },
    {
     "c": "#3a3d40",
     "d": 0.4,
     "h": 0.5,
     "id": "mmv8hhmcs372",
-    "rot": 0,
+    "rot": 180,
     "t": "tv",
     "w": 1.6,
     "x": 5.3,
-    "y": 3.15
+    "y": 3.155
    },
    {
     "c": "#6b4a33",
@@ -87,8 +90,8 @@ window.PROJET_FIGE = {
     "rot": 0,
     "t": "chevet",
     "w": 0.45,
-    "x": 6.35,
-    "y": 3.7
+    "x": 6.45,
+    "y": 3.665
    },
    {
     "c": "#6b4a33",
@@ -99,7 +102,7 @@ window.PROJET_FIGE = {
     "t": "chevet",
     "w": 0.45,
     "x": 4.25,
-    "y": 3.7
+    "y": 3.665
    },
    {
     "c": "#9aa88c",
@@ -110,18 +113,18 @@ window.PROJET_FIGE = {
     "t": "lit160",
     "w": 1.65,
     "x": 5.35,
-    "y": 4.5
+    "y": 4.515
    },
    {
-    "c": "#3a3d40",
+    "c": "#8a6b55",
     "d": 0.6,
-    "h": 2.2,
+    "h": 2.1,
     "id": "mmv8hk3r2264",
     "rot": 0,
     "t": "armoire",
     "w": 1.2,
     "x": 3.5,
-    "y": 0.3
+    "y": 0.305
    },
    {
     "c": "#3a3d40",
@@ -131,8 +134,8 @@ window.PROJET_FIGE = {
     "rot": 0,
     "t": "chaise",
     "w": 0.45,
-    "x": 1.85,
-    "y": 1.6
+    "x": 1.95,
+    "y": 1.7
    },
    {
     "c": "#3a3d40",
@@ -142,8 +145,8 @@ window.PROJET_FIGE = {
     "rot": 0,
     "t": "chaise",
     "w": 0.45,
-    "x": 2.65,
-    "y": 1.6
+    "x": 2.55,
+    "y": 1.7
    },
    {
     "c": "#3a3d40",
@@ -153,8 +156,8 @@ window.PROJET_FIGE = {
     "rot": 180,
     "t": "chaise",
     "w": 0.45,
-    "x": 2.65,
-    "y": 2.4
+    "x": 2.55,
+    "y": 2.3
    },
    {
     "c": "#3a3d40",
@@ -165,21 +168,21 @@ window.PROJET_FIGE = {
     "t": "chaise",
     "w": 0.45,
     "x": 1.95,
-    "y": 2.35
+    "y": 2.3
    },
    {
     "c": "#6b4a33",
     "d": 0.35,
     "h": 1.8,
     "id": "mmv8ht0le25",
-    "rot": 0,
+    "rot": 180,
     "t": "etagere",
     "w": 0.8,
     "x": 6.65,
-    "y": 6.05
+    "y": 6.07
    },
    {
-    "c": "#2f6468",
+    "c": "#6b4a33",
     "d": 0.46,
     "h": 0.85,
     "id": "mmv8htjsp84",
@@ -198,7 +201,7 @@ window.PROJET_FIGE = {
     "t": "lavelinge",
     "w": 0.6,
     "x": -0.95,
-    "y": 3.25
+    "y": 3.2
    },
    {
     "c": "#f6f5f1",
@@ -209,19 +212,8 @@ window.PROJET_FIGE = {
     "t": "clim",
     "w": 0.85,
     "x": 2.1,
-    "y": 0,
+    "y": 0.13,
     "z": 1.95
-   },
-   {
-    "c": "#6b4a33",
-    "d": 0.9,
-    "h": 0.75,
-    "id": "mmv8ihg1k144",
-    "rot": 0,
-    "t": "table6",
-    "w": 1.6,
-    "x": 2.25,
-    "y": 1.95
    },
    {
     "c": "#f6f5f1",
@@ -231,9 +223,43 @@ window.PROJET_FIGE = {
     "rot": 270,
     "t": "clim",
     "w": 0.85,
-    "x": 2.6,
+    "x": 2.66,
     "y": 4.7,
     "z": 1.95
+   },
+   {
+    "c": "#6b4a33",
+    "d": 0.8,
+    "h": 0.75,
+    "id": "mmv8u69a2809",
+    "rot": 0,
+    "t": "table4",
+    "w": 1.2,
+    "x": 2.25,
+    "y": 2
+   },
+   {
+    "c": "#1e1f21",
+    "d": 0.25,
+    "h": 0.78,
+    "id": "mmv8wyicm235",
+    "rot": 180,
+    "t": "tele55",
+    "w": 1.23,
+    "x": 5.3,
+    "y": 3.3,
+    "z": 0.5
+   },
+   {
+    "c": "#2a2c31",
+    "d": 0.6,
+    "h": 2.15,
+    "id": "mcuisine0415",
+    "rot": 180,
+    "t": "cuisine4",
+    "w": 2.45,
+    "x": 1.225,
+    "y": 5.95
    }
   ]
  }

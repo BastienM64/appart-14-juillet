@@ -105,6 +105,9 @@ window.APPART = {
   P.ouvertures.push({ id: "p_ch_salon", nom: "Porte chambre (depuis le salon)", type: "porte",
     mur: "c_ch1_ch2", at: 0.20, w: 0.83, h: 2.04, charniere: "a", sens: 1 });
 
+  // 15/10 — la cuisine devient un meuble du projet (déplaçable, couleur modifiable)
+  P.elements = P.elements.filter(e => e.id !== "cuis_bas" && e.id !== "cuis_haut");
+
   // 14/10 — placard décalé au fond de la chambre, sur le même mur
   const pl = el("plac1"); pl.y = 6.25 - pl.d;
 
