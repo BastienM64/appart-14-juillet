@@ -187,7 +187,7 @@ window.PROJET_FIGE = {
     "id": "mmv9lz6p3275",
     "t": "lavelinge",
     "x": 1.1,
-    "y": 2.75,
+    "y": 2.865,
     "rot": 0,
     "w": 0.6,
     "d": 0.6,
@@ -201,7 +201,7 @@ window.PROJET_FIGE = {
     "y": 2.815,
     "rot": 0,
     "w": 1.4,
-    "d": 0.5,
+    "d": 0.7,
     "h": 0.9,
     "c": "#9aa88c"
    },
