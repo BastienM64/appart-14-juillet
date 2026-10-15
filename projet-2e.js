@@ -28,7 +28,8 @@ window.PROJET_FIGE = {
   }
  },
  "retires": {
-  "projet": []
+  "projet": [],
+  "existant": []
  },
  "meubles": {
   "projet": [
@@ -139,8 +140,8 @@ window.PROJET_FIGE = {
     "rot": 180,
     "t": "clim",
     "w": 0.85,
-    "x": 3.85,
-    "y": 6.06,
+    "x": 3.55,
+    "y": 6.1,
     "z": 1.8
    },
    {
@@ -155,6 +156,7 @@ window.PROJET_FIGE = {
     "y": 3.48,
     "z": 0.5
    }
-  ]
+  ],
+  "existant": []
  }
 };
