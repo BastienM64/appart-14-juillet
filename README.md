@@ -14,7 +14,7 @@ Mise à jour : le bouton « Sauvegarde » des maquettes de travail lance la tâc
 - Three.js r128 (MIT) et ses modules d'exemple (`lib/`).
 - Texture de parquet « hardwood2 » issue des exemples Three.js (`tex/parquet_*.jpg`).
 - HDRI « Royal Esplanade » de Poly Haven, licence CC0 (`tex/env.js`, encodé en base64).
-- HDRI « Poly Haven Studio » de Poly Haven, licence CC0 (`tex/env-int.js`, réduit en 1K, plafond éclairci) : ambiance de la visite intérieure.
+- HDRI « Poly Haven Studio » de Poly Haven, licence CC0 (`tex/env-int.js`, réduit en 512 px, plafond éclairci) : ambiance de la visite intérieure.
 - Matières Poly Haven « Walnut Veneer 02 » et « White Stucco », licence CC0 (`tex/noyer_*`, `tex/stuc_*`), réduites en 1K.
 - Poly Haven « Leather White » (CC0, `tex/cuir_*`) et ambientCG « Leaking 018 A » (CC0, `tex/frigo_*`).
 - Poly Haven « European Walnut Veneer 04 » (CC0, `tex/noyereu_*`, meubles) et « Ribbed Corduroy » (CC0, `tex/velours_*`, textiles).

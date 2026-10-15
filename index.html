@@ -100,6 +100,8 @@ textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;font:1
 .travaux tr.tot td{font-weight:600;border-bottom:0}
 .note{font-size:12px;color:var(--muted);margin:0}
 #walkHud{position:absolute;inset:0;pointer-events:none}
+#walkLoad{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(240,238,232,.85);font-weight:600;z-index:5}
+#walkLoad[hidden]{display:none}
 #walkHud .cross{position:absolute;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%)}
 .wpanel{position:absolute;left:50%;top:calc(58px + env(safe-area-inset-top,0px));transform:translateX(-50%);max-width:calc(100% - 24px);box-sizing:border-box;
   background:rgba(20,24,26,.86);color:#fff;border-radius:10px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;pointer-events:auto;font-size:14px}
@@ -155,6 +157,7 @@ textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;font:1
         <button class="btn primary" id="bWalk">Visiter à hauteur d'homme</button>
       </div>
       <div class="hint" id="hint">Glisser pour tourner · pincer pour zoomer · toucher une pièce, un mur ou un meuble · double-clic sur un meuble pour le sélectionner, puis glisser pour le déplacer · Z Q S D pour se déplacer</div>
+      <div id="walkLoad" hidden>Préparation de la visite…</div>
       <div id="walkHud" hidden>
         <div class="cross"></div>
         <div class="measure" id="measure" aria-live="off"></div>
@@ -228,6 +231,7 @@ textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;font:1
 <script src="lib/shaders/LuminosityHighPassShader.js"></script>
 <script src="lib/postprocessing/UnrealBloomPass.js"></script>
 <script src="lib/lights/RectAreaLightUniformsLib.js"></script>
+<script src="lib/utils/BufferGeometryUtils.js"></script>
 <script>window.SITE_NAV={next:{href:"2e-etage.html",label:"2e étage"}};</script>
 <script src="projet.js"></script>
 <script src="data.js"></script>
@@ -484,6 +488,7 @@ const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
 renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
 renderer.outputEncoding=THREE.sRGBEncoding; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=0.9;
+renderer.shadowMap.autoUpdate=false; renderer.shadowMap.needsUpdate=true;
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(40,1,0.05,200);
 const controls=new THREE.OrbitControls(camera,cv);
@@ -569,7 +574,7 @@ function addWindow(w,o,CUT){
 }
 // plafonniers et lumière chaude dans chaque pièce (visite)
 let rectInit=false;
-function addWindowLights(){ if(!THREE.RectAreaLight||!THREE.RectAreaLightUniformsLib) return; if(!rectInit){ try{ THREE.RectAreaLightUniformsLib.init(); rectInit=true; }catch(e){ return; } }
+function addWindowLights(){ if(qual===0||!THREE.RectAreaLight||!THREE.RectAreaLightUniformsLib) return; if(!rectInit){ try{ THREE.RectAreaLightUniformsLib.init(); rectInit=true; }catch(e){ return; } }
   for(const o of V.ouvertures){ if(o.type!=="fenetre"||isRetire(o.mur)) continue; const w=V.murs.find(m=>m.id===o.mur); if(!w) continue;
     const f=frame(w), q=ptAt(w,o.at+o.w/2), z0=o.allege||0, hh=Math.max(.3,Math.min(o.h,V.hauteur-z0));
     for(const k of [1,-1]){ const off=w.ep/2+0.03; if(!roomAt([q[0]+f.n[0]*(off+0.15)*k,q[1]+f.n[1]*(off+0.15)*k])) continue;
@@ -585,7 +590,7 @@ function addCeilingLights(){
     const h=hAt(c[0],c[1]), e=.05, nx=(hAt(c[0]-e,c[1])-hAt(c[0]+e,c[1]))/(2*e), nz=(hAt(c[0],c[1]-e)-hAt(c[0],c[1]+e))/(2*e);
     const lamp=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.18,0.05,24),new THREE.MeshStandardMaterial({color:0xffffff,emissive:new THREE.Color(0xfff1d6),emissiveIntensity:.9,roughness:.4}));
     lamp.position.set(c[0],h-0.03,c[1]); lamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(-nx,1,-nz).normalize()); group.add(lamp);
-    const L=new THREE.PointLight(0xffd3a0,0.4,Math.max(4,Math.sqrt(area(r.poly))*2.6),2); L.position.set(c[0],h-0.25,c[1]); group.add(L); }
+    if(qual===0) continue; const L=new THREE.PointLight(0xffd3a0,0.4,Math.max(4,Math.sqrt(area(r.poly))*2.6),2); L.position.set(c[0],h-0.25,c[1]); group.add(L); }
 }
 // environnements : extérieur (vue d'ensemble) et intérieur (visite, HDRI « Poly Haven Studio »)
 let envExt=null, envInt=null;
@@ -628,6 +633,16 @@ function addBox(par,x0,x1,y0,y1,z0,z1,m){ const g=new THREE.BoxGeometry(x1-x0,z1
 // côté d'un équipement fixe qui touche un mur (pour orienter WC, lavabo, douche, radiateurs)
 function autoDos(e){ const c=[e.x+e.w/2,e.y+e.d/2], r0=roomAt(c), o=0.08, S={y0:[c[0],e.y-o],y1:[c[0],e.y+e.d+o],x0:[e.x-o,c[1]],x1:[e.x+e.w+o,c[1]]};
   for(const k of ["y0","y1","x0","x1"]){ const r=roomAt(S[k]); if(!r||r!==r0) return k; } return "y0"; }
+// fusionne les pièces d'un meuble qui partagent la même matière (les portes coulissantes, dans des sous-groupes, restent mobiles)
+function mergeStatic(g){ const U=THREE.BufferGeometryUtils; if(!U||!U.mergeBufferGeometries) return; const buckets=new Map();
+  for(const ch of g.children){ if(!ch.isMesh||!ch.geometry||ch.userData.noMerge||(g===group&&Object.keys(ch.userData).length)) continue; const geo=ch.geometry;
+    const k=ch.material.uuid+"|"+(geo.index?1:0)+"|"+ch.castShadow+"|"+Object.keys(geo.attributes).sort().join(",");
+    if(!buckets.has(k)) buckets.set(k,[]); buckets.get(k).push(ch); }
+  for(const list of buckets.values()){ if(list.length<2) continue;
+    const geos=list.map(o=>{ o.updateMatrix(); const gg=o.geometry.clone(); gg.applyMatrix4(o.matrix); gg.clearGroups(); return gg; });
+    let merged=null; try{ merged=U.mergeBufferGeometries(geos,false); }catch(e){} geos.forEach(x=>{ if(x!==merged) x.dispose(); }); if(!merged) continue;
+    const mm=new THREE.Mesh(merged,list[0].material); mm.castShadow=list[0].castShadow; mm.receiveShadow=list[0].receiveShadow; g.add(mm);
+    for(const o of list){ g.remove(o); o.geometry.dispose(); } } }
 /* meubles : chaque forme est construite centrée, dos vers -z */
 function furnMesh(m){
   const g=new THREE.Group(), w=m.w, d=m.d, h=m.h, x0=-w/2, x1=w/2, z0=-d/2, z1=d/2, kind=m.g||(CAT[m.t]||{}).g||"box", sel=isSel("meuble",m.id)||(m.elKey&&isSel("elem",m.elKey));
@@ -827,13 +842,14 @@ function furnMesh(m){
   else if(kind==="tapis"){ const me=B(x0,x1,z0,z1,0.002,Math.max(0.006,h),body); me.castShadow=false; }
   else { B(x0,x1,z0,z1,0,h,body); if(h>0.6&&w>0.5){ const nd=Math.max(1,Math.round(w/0.6)); for(let i=1;i<nd;i++){ const lx=x0+i*w/nd; B(lx-0.003,lx+0.003,z1,z1+0.004,0.02,h-0.02,dark);} } }
   g.position.set(m.x,m.z||0,m.y); g.rotation.y=-m.rot*Math.PI/180;
+  mergeStatic(g);
   g.traverse(o=>{ o.userData.meuble=m.id; });
   return g;
 }
 
 let showLow=true;
 const doorTarget={}, doorCur={}; let doorObjs={}, doorHover=null;
-function doorAnimate(dt){ for(const k in doorObjs){ const d=doorObjs[k], t=doorTarget[k]; let c=doorCur[k]; if(Math.abs(t-c)<0.002) continue;
+function doorAnimate(dt){ for(const k in doorObjs){ const d=doorObjs[k], t=doorTarget[k]; let c=doorCur[k]; if(Math.abs(t-c)<0.002) continue; renderer.shadowMap.needsUpdate=true;
     c+= (t-c)*Math.min(1,dt*7); if(Math.abs(t-c)<0.002) c=t; doorCur[k]=c; if(d.apply) d.apply(c); else d.pivot.rotation.y=-(d.a0+d.da*c); } }
 function toggleDoor(key){ if(!doorObjs[key]) return; doorTarget[key]=doorTarget[key]>0.5?0:1;
   const pr=doorObjs[key].pair; if(pr && doorTarget[key]>0.5 && doorTarget[pr]!==undefined) doorTarget[pr]=0; if(walk) computeBlockers(); }
@@ -989,6 +1005,8 @@ function build(){ fitDoors();
   }
   for(const m of meubles()){ if(!furnVisible(m)) continue; const o=furnMesh(m); group.add(o); furnObjs[m.id]=o; }
   if(walk) computeBlockers();
+  mergeStatic(group);   // fenêtres, plinthes, encadrements… fusionnés par matière
+  renderer.shadowMap.needsUpdate=true;
 }
 
 /* ---------- visite à hauteur d'homme ---------- */
@@ -1022,7 +1040,10 @@ function enterWalk(){
   controls.enabled=false; camera.fov=78; camera.near=0.05; camera.far=25; camera.updateProjectionMatrix(); updHQ();
   stage.classList.add("full"); document.body.style.overflow="hidden";
   try{ const rq=stage.requestFullscreen||stage.webkitRequestFullscreen; if(rq){ const r=rq.call(stage,{navigationUI:"hide"}); if(r&&r.catch) r.catch(()=>{}); } }catch(e){}
-  setSceneBg(); applyLook(); build(); const p=nearestFree(walk.x,walk.y); walk.x=p[0]; walk.y=p[1];
+  perf={n:0,t:0}; setPR(); setSceneBg(); applyLook();
+  const ov=$("walkLoad"); if(ov) ov.hidden=false;
+  setTimeout(()=>{ if(!walk) return; build(); const p=nearestFree(walk.x,walk.y); walk.x=p[0]; walk.y=p[1];
+    try{ camera.position.set(walk.x,walk.eye,walk.y); renderer.compile(scene,camera); }catch(e){} if(ov) ov.hidden=true; },30);
   $("walkHud").hidden=false; $("tools3d").hidden=true; $("hint").hidden=true; labelsEl.hidden=true;
   $("walkHelp").textContent = matchMedia("(pointer:fine)").matches ? "Z Q S D pour marcher · clic maintenu pour regarder · E (ou clic) pour ouvrir / fermer une porte · M pour masquer les meubles" : "Joystick pour marcher · glisser pour regarder · toucher une porte pour l'ouvrir ou la fermer";
 }
@@ -1032,7 +1053,7 @@ function exitWalk(){
   try{ const fe=document.fullscreenElement||document.webkitFullscreenElement; if(fe){ const ex=document.exitFullscreen||document.webkitExitFullscreen; const r=ex&&ex.call(document); if(r&&r.catch) r.catch(()=>{}); } }catch(e){}
   camera.fov=40; camera.far=200; camera.updateProjectionMatrix(); camera.up.set(0,1,0);
   if(orbitSave){ camera.position.copy(orbitSave.p); controls.target.copy(orbitSave.t); }
-  controls.enabled=true; setSceneBg(); applyLook(); build();
+  controls.enabled=true; setPR(); setSceneBg(); applyLook(); build(); if($("walkLoad")) $("walkLoad").hidden=true;
   $("walkHud").hidden=true; $("tools3d").hidden=false; $("hint").hidden=false; labelsEl.hidden=false; $("measure").textContent="";
 }
 let carry=null;
@@ -1073,8 +1094,10 @@ function furnVisible(m){ return showFurn || (CAT[m.t]||{}).g==="cuisine"; }
 function setFurn(v){ showFurn=v; for(const id of ["bFurn","bFurnW"]){ const b=document.getElementById(id); if(b){ b.setAttribute("aria-pressed",v); b.textContent=v?"Meubles : affichés":"Meubles : masqués"; } } build(); }
 document.getElementById("bFurn").onclick=()=>setFurn(!showFurn);
 document.getElementById("bFurnW").onclick=e=>{ e.stopPropagation(); setFurn(!showFurn); };
-function updHQ(){ const b=$("bHQ"); if(!b) return; b.setAttribute("aria-pressed",hq); b.textContent=hq?"Rendu : haute qualité":"Rendu : rapide"; }
-document.getElementById("bHQ").onclick=()=>{ hq=!hq; updHQ(); };
+const QNAMES=["Rendu : léger","Rendu : standard","Rendu : haute qualité"];
+function setPR(){ const d=window.devicePixelRatio||1; renderer.setPixelRatio(walk?Math.min(d,[0.8,1.25,1.5][qual]):Math.min(2,d)); resize(); }
+function updHQ(){ const b=$("bHQ"); if(b){ b.setAttribute("aria-pressed",qual===2); b.textContent=QNAMES[qual]; } setPR(); }
+document.getElementById("bHQ").onclick=()=>{ qual=(qual+2)%3; qualManual=true; updHQ(); if(walk){ applyLook(); build(); } };
 function stepWalk(dt){
   let f=0,s=0;
   if(keys.KeyW||keys.KeyZ||keys.ArrowUp) f+=1; if(keys.KeyS||keys.ArrowDown) f-=1;
@@ -1134,10 +1157,11 @@ window.addEventListener("blur",()=>{ keys={}; });
 /* ---------- caméra ---------- */
 let anim=null;
 function flyTo(target,pos){ anim={t:0,ft:controls.target.clone(),fp:camera.position.clone(),tt:target,tp:pos}; }
-function applyLook(){ const w=!!walk, c=center(); if(!envExt && !w && scene.environment && scene.environment!==envInt) envExt=scene.environment;
+function applyLook(){ const w=!!walk, c=center(), lite=w&&qual===0;
+  if(renderer.shadowMap.enabled===lite){ renderer.shadowMap.enabled=!lite; for(const k in matCache) matCache[k].needsUpdate=true; } if(!envExt && !w && scene.environment && scene.environment!==envInt) envExt=scene.environment;
   if(w && envInt){ if(!envExt) envExt=scene.environment; scene.environment=envInt; } else if(!w && envExt) scene.environment=envExt;
   renderer.toneMappingExposure=w?1.02:0.9;
-  hemi.color.set(w?0xd3dff0:0xffffff); hemi.groundColor.set(w?0x9c8a74:0x8a8378); hemi.intensity=w?0.26:0.32;
+  hemi.color.set(w?0xd3dff0:0xffffff); hemi.groundColor.set(w?0x9c8a74:0x8a8378); hemi.intensity=lite?0.5:(w?0.26:0.32);
   sun.color.set(w?0xffdcb4:0xfff3e2); sun.intensity=w?2.1:1.15;
   if(w){ sun.position.set(c.x+9,5.2,c.z+3.5); sun.target.position.copy(c); } else { sun.position.set(12,14,4); sun.target.position.set(0,0,0); }
   Object.assign(sun.shadow.camera,w?{left:-6,right:6,top:6,bottom:-6,near:1,far:30}:{left:-8,right:8,top:8,bottom:-8,near:1,far:40}); sun.shadow.camera.updateProjectionMatrix(); sun.shadow.bias=w?-0.0004:-0.0006; }
@@ -1147,7 +1171,7 @@ function viewTop(){ const c=center(); flyTo(c,new THREE.Vector3(c.x,15,c.z+0.01)
 function focusRoom(id){ const r=V.pieces.find(p=>p.id===id); const c=centroid(r.poly), bb=bbox(r.poly), s=Math.max(bb.x1-bb.x0,bb.y1-bb.y0);
   const t=new THREE.Vector3(c[0],0.4,c[1]); flyTo(t,new THREE.Vector3(c[0]-s*0.55,2.2+s*1.25,c[1]+s*1.15)); }
 
-let composer=null, ssao=null, fxaa=null, bloom=null, hq=matchMedia("(pointer:fine)").matches;
+let composer=null, ssao=null, fxaa=null, bloom=null, qual=matchMedia("(pointer:fine)").matches?2:1, qualManual=false, perf={n:0,t:0};
 function getComposer(){
   if(composer) return composer; if(!THREE.EffectComposer||!THREE.SSAOPass||!THREE.ShaderPass||!THREE.FXAAShader||!THREE.GammaCorrectionShader) return null;
   try{ const w=stage.clientWidth,h=stage.clientHeight; composer=new THREE.EffectComposer(renderer);
@@ -1179,7 +1203,11 @@ function loop(){
   if(anim){ anim.t=Math.min(1,anim.t+0.045); const k=1-Math.pow(1-anim.t,3); controls.target.lerpVectors(anim.ft,anim.tt,k); camera.position.lerpVectors(anim.fp,anim.tp,k); if(anim.t>=1) anim=null; }
   const now=performance.now(), dt=Math.min(0.05,(now-(lastT||now))/1000); lastT=now;
   doorAnimate(dt);
-  if(walk){ stepWalk(dt); if(carry) carryStep(); const C=hq?getComposer():null; if(C) C.render(dt); else renderer.render(scene,camera); if(now-measT>120){ measT=now; measure(); } return; }
+  if(walk){ stepWalk(dt); if(carry){ carryStep(); renderer.shadowMap.needsUpdate=true; }
+    // réglage automatique : si la machine peine (moins de ~30 images/s), on baisse d'un cran
+    if(!qualManual && qual>0 && document.visibilityState==="visible"){ perf.n++; if(perf.n>40){ perf.t+=(now-perf.last||0); } perf.last=now;
+      if(perf.n>130){ const avg=perf.t/90; perf={n:0,t:0}; if(avg>33){ qual--; updHQ(); applyLook(); build(); $("measure").textContent="Rendu ajusté automatiquement ("+QNAMES[qual].replace("Rendu : ","")+")"; measT=now+2500; } else qualManual=true; } }
+    const C=qual===2?getComposer():null; if(C) C.render(dt); else renderer.render(scene,camera); if(now-measT>120){ measT=now; measure(); } return; }
   if(mode==="3d") orbitKeys(dt);
   controls.update(); renderer.render(scene,camera);
   if(mode==="3d"){ const w=stage.clientWidth,h=stage.clientHeight;
@@ -1221,7 +1249,7 @@ window.addEventListener("pointermove",e=>{
   if(!drag || e.pointerId!==drag.pid) return; setRay(e);
   if(!ray.ray.intersectPlane(floorPlane,hitPt)) return;
   const nx=snap(hitPt.x+drag.dx), ny=snap(hitPt.z+drag.dy);
-  if(nx!==drag.m.x||ny!==drag.m.y){ drag.m.x=+nx.toFixed(2); drag.m.y=+ny.toFixed(2); drag.moved=true; const o=furnObjs[drag.id]; if(o) o.position.set(drag.m.x,drag.m.z||0,drag.m.y); }
+  if(nx!==drag.m.x||ny!==drag.m.y){ drag.m.x=+nx.toFixed(2); drag.m.y=+ny.toFixed(2); drag.moved=true; const o=furnObjs[drag.id]; if(o){ o.position.set(drag.m.x,drag.m.z||0,drag.m.y); renderer.shadowMap.needsUpdate=true; } }
 });
 window.addEventListener("pointerup",e=>{
   if(walk){ if(look && e.pointerId===look.id){ const L=look; look=null; unlockMouse(); if(L.moved<8 && performance.now()-L.t<400) walkClick(L.sx,L.sy); } return; }
