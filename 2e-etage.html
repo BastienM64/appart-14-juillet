@@ -154,7 +154,7 @@ textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;font:1
         <button class="btn" id="bReset">Vue d'ensemble</button>
         <button class="btn primary" id="bWalk">Visiter à hauteur d'homme</button>
       </div>
-      <div class="hint" id="hint">Glisser pour tourner · pincer pour zoomer · toucher une pièce, un mur ou un meuble · faire glisser un meuble pour le déplacer</div>
+      <div class="hint" id="hint">Glisser pour tourner · pincer pour zoomer · toucher une pièce, un mur ou un meuble · faire glisser un meuble pour le déplacer · Z Q S D pour se déplacer</div>
       <div id="walkHud" hidden>
         <div class="cross"></div>
         <div class="measure" id="measure" aria-live="off"></div>
@@ -1117,12 +1117,24 @@ function sizeComposer(){ if(!composer) return; const w=stage.clientWidth,h=stage
 function resize(){ const w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); sizeComposer(); }
 new ResizeObserver(resize).observe(stage);
 const tmp=new THREE.Vector3();
+// vue extérieure : Z Q S D (ou W A S D / flèches) font glisser la caméra à plat, A/E ou Shift pour aller plus vite
+const okeys={};
+window.addEventListener("keydown",e=>{ if(walk||mode!=="3d"||e.ctrlKey||e.metaKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  if(/^(Arrow(Up|Down|Left|Right)|Key[ZQSDWA]|ShiftLeft|ShiftRight)$/.test(e.code)){ okeys[e.code]=true; if(e.code.startsWith("Arrow")) e.preventDefault(); } });
+window.addEventListener("keyup",e=>{ delete okeys[e.code]; }); window.addEventListener("blur",()=>{ for(const k in okeys) delete okeys[k]; });
+const _f=new THREE.Vector3(), _r=new THREE.Vector3(), _mv=new THREE.Vector3();
+function orbitKeys(dt){ const fw=(okeys.KeyZ||okeys.KeyW||okeys.ArrowUp?1:0)-(okeys.KeyS||okeys.ArrowDown?1:0), rt=(okeys.KeyD||okeys.ArrowRight?1:0)-(okeys.KeyQ||okeys.KeyA||okeys.ArrowLeft?1:0);
+  if(!fw&&!rt) return; anim=null;
+  camera.getWorldDirection(_f); _f.y=0; if(_f.lengthSq()<1e-6) _f.set(0,0,-1); _f.normalize(); _r.set(-_f.z,0,_f.x);
+  const dist=camera.position.distanceTo(controls.target), sp=Math.max(1.5,dist*0.6)*(okeys.ShiftLeft||okeys.ShiftRight?2.2:1)*dt;
+  _mv.copy(_f).multiplyScalar(fw).addScaledVector(_r,rt).normalize().multiplyScalar(sp); camera.position.add(_mv); controls.target.add(_mv); }
 function loop(){
   requestAnimationFrame(loop);
   if(anim){ anim.t=Math.min(1,anim.t+0.045); const k=1-Math.pow(1-anim.t,3); controls.target.lerpVectors(anim.ft,anim.tt,k); camera.position.lerpVectors(anim.fp,anim.tp,k); if(anim.t>=1) anim=null; }
   const now=performance.now(), dt=Math.min(0.05,(now-(lastT||now))/1000); lastT=now;
   doorAnimate(dt);
   if(walk){ stepWalk(dt); if(carry) carryStep(); const C=hq?getComposer():null; if(C) C.render(dt); else renderer.render(scene,camera); if(now-measT>120){ measT=now; measure(); } return; }
+  if(mode==="3d") orbitKeys(dt);
   controls.update(); renderer.render(scene,camera);
   if(mode==="3d"){ const w=stage.clientWidth,h=stage.clientHeight;
     for(const id in labels){ const L=labels[id]; tmp.copy(L.pos).project(camera); const vis=tmp.z<1;
@@ -1494,7 +1506,7 @@ if(VIDS.length>1){ sg.innerHTML=VIDS.map(k=>`<button data-v="${k}" aria-pressed=
 else sg.hidden=true;
 
 if(READONLY){ const rc=$("recapTitle").parentElement; rc.parentElement.insertBefore(rc,$("detail").nextSibling); $("furnCard").remove(); $("wallsCard").remove(); $("travaux").hidden=false; $("export").hidden=true; $("bCopy").parentElement.hidden=true; $("recapTitle").textContent="Programme de travaux";
-  $("hint").textContent="Glisser pour tourner · pincer pour zoomer · toucher une pièce pour ses détails"; }
+  $("hint").textContent="Glisser pour tourner · pincer pour zoomer · toucher une pièce pour ses détails · Z Q S D pour se déplacer"; }
 resize(); refresh(); setStatus(); prevState=JSON.stringify(S); updUndo();
 $("bUndo").onclick=undo;
 window.addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==="z"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){ e.preventDefault(); undo(); } });
