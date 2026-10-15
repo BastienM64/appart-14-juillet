@@ -69,6 +69,7 @@ window.APPART = {
         { id: "douche",   nom: "Receveur de douche",    type: "sanitaire", x: 2.21, y: 0.00, w: 0.79, d: 0.79, z: 0, h: 0.12, couleur: "#f7f7f5" },
         { id: "lavabo",   nom: "Lavabo",                type: "sanitaire", x: 1.50, y: 0.00, w: 0.60, d: 0.48, z: 0.80, h: 0.15, couleur: "#f7f7f5" },
         { id: "cuvette",  nom: "WC",                    type: "sanitaire", x: 0.02, y: 1.72, w: 0.62, d: 0.40, z: 0, h: 0.40, couleur: "#f7f7f5" },
+        { id: "tableau",  nom: "Tableau électrique (ancien cellier)", type: "technique", x: 0.00, y: 3.15, w: 0.12, d: 0.40, z: 0.60, h: 0.50, couleur: "#f2f2ee" },
         { id: "pl_ch",    nom: "Rangement chambre (étagères, portes coulissantes)", type: "dressing", etageres: true, dos: "x1", x: 6.48, y: 0.00, w: 0.55, d: 1.35, z: 0, h: 1.10, couleur: "#f0eee8" },
         // cuisine en L (plan : 2,54 m le long du mur gauche + retour le long du mur du fond)
         // modules listés depuis l'angle : l'évier est sous la fenêtre ; plaque + hotte au milieu du retour (15/10)
@@ -96,6 +97,8 @@ window.APPART = {
   P.elements = P.elements.filter(e => e.type !== "radiateur");
   // 15/10 — l'ancien lavabo est remplacé par un meuble vasque (posé dans la maquette)
   P.elements = P.elements.filter(e => e.id !== "lavabo");
+  // 15/10 — tableau électrique déplacé dans la colonne technique (meuble posé dans la maquette)
+  P.elements = P.elements.filter(e => e.id !== "tableau");
   // 15/10 — porte du cellier décalée vers la droite, là où le rampant laisse passer une porte de ~1,83 m
   // 15/10 — évier centré sur la fenêtre de la cuisine (3,78–4,55 m), robinet sur le côté pour laisser s'ouvrir les vantaux
   P.elements.find(e => e.id === "cuisine_g").modules = [["angle", 0.89], ["tiroirs", 0.80], ["evier", 0.77, { robinet: "cote" }], ["fileur", 0.06]];
