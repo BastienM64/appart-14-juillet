@@ -77,7 +77,7 @@ window.APPART = {
         { id: "cuisine_f", nom: "Cuisine — retour mur du fond", groupe: "cuisine", type: "cuisine_run", dos: "y1", x: 0.61, y: 5.60, w: 1.79, d: 0.64, z: 0, h: 0.90, couleur: "#e9e6df", plan: "#cfccc4",
           modules: [["porte", 0.60], ["plaque", 0.60], ["porte", 0.59]] },
         // poutre (jambe de force) : pied au sol contre le mur, juste après la fenêtre, remonte jusqu'au plafond
-        { id: "poutre_ch", nom: "Poutre inclinée (chambre)", type: "poutre3d", a: [6.95, 2.43, 0.00], b: [5.09, 2.43, 2.04], sec: 0.14, couleur: "#9b7a55" },
+        { id: "poutre_ch", nom: "Poutre inclinée (chambre)", type: "poutre3d", a: [6.95, 2.43, 0.00], b: [5.09, 2.43, 2.04], sec: 0.14, couleur: "#5a4232", bois: "#6e5241" },
         { id: "rad_ch",   nom: "Radiateur chambre",     type: "radiateur", x: 6.10, y: 3.17, w: 0.85, d: 0.10, z: 0.15, h: 0.45, couleur: "#f4f4f0" },
         { id: "rad_sej",  nom: "Radiateur séjour",      type: "radiateur", x: 6.10, y: 3.36, w: 0.85, d: 0.10, z: 0.15, h: 0.45, couleur: "#f4f4f0" },
         { id: "rad_sej2", nom: "Radiateur séjour (cellier)", type: "radiateur", x: 1.55, y: 3.73, w: 0.60, d: 0.10, z: 0.15, h: 0.45, couleur: "#f4f4f0" }

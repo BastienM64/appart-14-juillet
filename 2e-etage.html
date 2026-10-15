@@ -923,7 +923,12 @@ function build(){
   }
   for(const e of V.elements){
     if(e.type==="poutre3d"){ const A=new THREE.Vector3(e.a[0],e.a[2],e.a[1]), B=new THREE.Vector3(e.b[0],Math.min(e.b[2],CUT),e.b[1]);
-      if(e.a[2]>=CUT) continue; const len=A.distanceTo(B), me=new THREE.Mesh(new THREE.BoxGeometry(e.sec,e.sec,len),mat(e.couleur||"#9b7a55",{roughness:.8}));
+      if(e.a[2]>=CUT) continue; const len=A.distanceTo(B), geo=new THREE.BoxGeometry(e.sec,e.sec,len);
+      // UV en mètres, fil du bois dans la longueur de la poutre
+      { const P=geo.attributes.position, N=geo.attributes.normal, U=geo.attributes.uv; for(let i=0;i<P.count;i++){ const x=P.getX(i),y=P.getY(i),z=P.getZ(i);
+          if(Math.abs(N.getZ(i))>.5) U.setXY(i,x,y); else U.setXY(i,z,Math.abs(N.getX(i))>.5?y:x); } U.needsUpdate=true; }
+      const bm=PH.ready?new THREE.MeshStandardMaterial({color:lin(e.bois||"#6e5241"),map:phRep(PH.ed,1/0.9,1/0.9),normalMap:phRep(PH.en,1/0.9,1/0.9),normalScale:new THREE.Vector2(.7,.7),roughnessMap:phRep(PH.er,1/0.9,1/0.9),roughness:1,envMapIntensity:.5}):mat(e.couleur||"#5a4232",{roughness:.8});
+      const me=new THREE.Mesh(geo,bm);
       me.position.copy(A).add(B).multiplyScalar(.5); me.lookAt(B); me.castShadow=me.receiveShadow=true; me.userData.poutre=e.id; group.add(me); continue; }
     const z1=Math.min(e.z+e.h,CUT); if(z1<=e.z) continue;
     if(e.type==="ballon"){ const r=e.w/2, cx=e.x+r, cz=e.y+e.d/2, Hh=z1-e.z, dome=r*.32, bm=mat(e.couleur,{roughness:.28}), add=me=>{ me.castShadow=me.receiveShadow=true; group.add(me); return me; };
