@@ -14,8 +14,12 @@ window.PROJET_FIGE = {
     "murs": "#f4f4f1",
     "sol": "chene-fonce"
    },
+   "el:cuisine": {
+    "c": "#9aa88c"
+   },
    "sde": {
-    "murs": "#f4f4f1"
+    "murs": "#f4f4f1",
+    "sol": "carrelage-blanc"
    },
    "sejour": {
     "murs": "#f4f4f1",
