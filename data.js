@@ -64,8 +64,7 @@ window.APPART = {
       ],
 
       elements: [
-        { id: "cuis_bas",  nom: "Cuisine — meubles bas",  type: "cuisine",   x: 0.00, y: 5.65, w: 2.45, d: 0.60, z: 0.00, h: 0.90, couleur: "#2a2c31", plan: "#d8d8d4" },
-        { id: "cuis_haut", nom: "Cuisine — meubles hauts", type: "cuisine",  x: 0.00, y: 5.90, w: 2.45, d: 0.35, z: 1.45, h: 0.70, couleur: "#2a2c31" },
+        { id: "cuisine",   nom: "Cuisine 4 modules",      type: "cuisine4",  x: 0.00, y: 5.65, w: 2.45, d: 0.60, z: 0.00, h: 2.15, couleur: "#2a2c31" },
         { id: "tableau",   nom: "Tableau électrique",     type: "technique", x: 0.00, y: 3.05, w: 0.12, d: 0.45, z: 1.10, h: 0.80, couleur: "#f2f2ee" },
         { id: "rad_sej",   nom: "Radiateur séjour",       type: "radiateur", x: 0.00, y: 2.30, w: 0.10, d: 0.60, z: 0.15, h: 0.45, couleur: "#f4f4f0" },
         { id: "rad_ch1",   nom: "Radiateur chambre 1",    type: "radiateur", x: 6.95, y: 2.30, w: 0.10, d: 0.55, z: 0.15, h: 0.45, couleur: "#f4f4f0" },
@@ -74,7 +73,7 @@ window.APPART = {
         { id: "douche",    nom: "Receveur de douche",     type: "sanitaire", x: -1.27, y: 0.03, w: 0.68, d: 1.02, z: 0.00, h: 0.15, couleur: "#f7f7f5" },
         { id: "lavabo",    nom: "Lavabo",                 type: "sanitaire", x: -1.18, y: 2.30, w: 0.50, d: 0.44, z: 0.80, h: 0.15, couleur: "#f7f7f5" },
         { id: "rad_sde",   nom: "Radiateur soufflant",    type: "radiateur", x: -0.66, y: 1.35, w: 0.10, d: 0.45, z: 1.40, h: 0.55, couleur: "#f4f4f0" },
-        { id: "ballon",    nom: "Ballon d'eau chaude",    type: "ballon",    x: -1.20, y: 2.84, w: 0.50, d: 0.50, z: 1.20, h: 1.00, couleur: "#f6f6f3" },
+        { id: "ballon",    nom: "Ballon d'eau chaude",    type: "ballon",    x: -1.20, y: 2.84, w: 0.50, d: 0.50, z: 1.00, h: 1.20, couleur: "#f6f6f3" },
         { id: "cuvette",   nom: "WC",                     type: "sanitaire", x: -1.13, y: 5.68, w: 0.40, d: 0.55, z: 0.00, h: 0.40, couleur: "#f7f7f5" }
       ]
     },
@@ -105,7 +104,7 @@ window.APPART = {
     mur: "c_ch1_ch2", at: 0.20, w: 0.83, h: 2.04, charniere: "a", sens: 1 });
 
   // 15/10 — la cuisine devient un meuble du projet (déplaçable, couleur modifiable)
-  P.elements = P.elements.filter(e => e.id !== "cuis_bas" && e.id !== "cuis_haut");
+  P.elements = P.elements.filter(e => e.id !== "cuisine");
 
   // 15/10 — le meuble vasque remplace l'ancien lavabo de la salle d'eau
   P.elements = P.elements.filter(e => e.id !== "lavabo");
@@ -115,6 +114,12 @@ window.APPART = {
 
   // 14/10 — placard décalé au fond de la chambre, sur le même mur
   const pl = el("plac1"); pl.y = 6.25 - pl.d;
+
+  // 15/10 — le placard devient un dressing : portes coulissantes, penderie et étagères
+  Object.assign(pl, { nom: "Dressing chambre", type: "dressing", dos: "x0" });
+
+  // 15/10 — ballon remplacé par un modèle plus court (même hauteur haute, remonté par le bas)
+  Object.assign(el("ballon"), { z: 1.20, h: 1.00 });
 
   window.APPART.variantes.projet = P;
 })();
