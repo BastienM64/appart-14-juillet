@@ -566,6 +566,9 @@ function colorRuns(w,s0,s1){
   return runs;
 }
 function sideColor(w,c,n,sign){ const p=[c[0]+n[0]*(w.ep/2+0.04)*sign, c[1]+n[1]*(w.ep/2+0.04)*sign]; const r=roomAt(p); return r?style(r).murs:EXT_COLOR; }
+function addSlopedBox(par,x0,x1,y0,y1,z0,z1,m){ const nx=Math.max(1,Math.ceil((x1-x0)/.05)), ny=Math.max(1,Math.ceil((y1-y0)/.05)), g=new THREE.BoxGeometry(x1-x0,z1-z0,y1-y0,nx,1,ny), P=g.attributes.position, cx=(x0+x1)/2, cy=(y0+y1)/2, cz=(z0+z1)/2;
+  for(let i=0;i<P.count;i++) if(P.getY(i)>0){ const t=Math.max(z0+.02,Math.min(z1,hAt(P.getX(i)+cx,P.getZ(i)+cy)-.005)); P.setY(i,t-cz); }
+  g.computeVertexNormals(); const me=new THREE.Mesh(g,m); me.position.set(cx,cz,cy); me.castShadow=me.receiveShadow=true; par.add(me); return me; }
 function addBox(par,x0,x1,y0,y1,z0,z1,m){ const g=new THREE.BoxGeometry(x1-x0,z1-z0,y1-y0), me=new THREE.Mesh(g,m); me.position.set((x0+x1)/2,(z0+z1)/2,(y0+y1)/2); me.castShadow=me.receiveShadow=true; par.add(me); return me; }
 
 // côté d'un équipement fixe qui touche un mur (pour orienter WC, lavabo, douche, radiateurs)
@@ -656,6 +659,31 @@ function furnMesh(m){
       for(const bx of [x0+.12,x1-.16]) B(bx,bx+.04,z0,pz+.02,h*.65,h*.65+.04,wh); C(.016,.016,.07,x1-.03,-.045,(pz+z1)/2,chrome); C(.02,.02,.04,x1-.03,-.1,(pz+z1)/2,M("#f4f4f2",.3)); } }
   else if(kind==="plan"){ B(x0+.01,x1-.01,z0,z1-.03-.018,0.10,h-.04,body); B(x0,x1,z0,z1,h-.04,h,top); B(x0+.03,x1-.03,z0,z1-.08,0,0.10,dark);
     const n=Math.max(1,Math.round(w/0.6)); for(let i=0;i<n;i++){ const a=x0+.01+i*(w-.02)/n; B(a+.002,a+(w-.02)/n-.002,z1-.048,z1-.03,.103,h-.043,body); const xm=a+(w-.02)/n/2; B(xm-.08,xm+.08,z1-.03,z1-.02,h-.1,h-.088,chrome); } }
+  else if(kind==="_run"){ const bh=h, ct=.03, carc=M(hexShade(m.c,-12),.6), planM=M(m.plan||"#cfccc4",.35),
+      inox=new THREE.MeshStandardMaterial({color:lin("#c9ccce"),roughness:.28,metalness:1,envMapIntensity:1.1}), inoxD=new THREE.MeshStandardMaterial({color:lin("#8d9093"),roughness:.35,metalness:1}),
+      verre=new THREE.MeshStandardMaterial({color:lin("#0d0e10"),roughness:.08,metalness:.2,envMapIntensity:1.2}), zc=(z0+z1)/2;
+    const toW=(lx,lz)=>{ const f=-(m.rot||0)*Math.PI/180; return [m.x+lx*Math.cos(f)+lz*Math.sin(f), m.y-lx*Math.sin(f)+lz*Math.cos(f)]; };
+    B(x0+.01,x1-.01,z0+.03,z1-.06,0,.10,leg); B(x0,x1,z0,z1-.02,.10,bh-ct,carc); B(x0,x1,z0,z1+.02,bh-ct,bh,planM);
+    let a=x0; for(const [t,l] of (m.mods||[["porte",w]])){ const b=a+l, xm=(a+b)/2;
+      if(t==="tiroirs"){ const hh=(bh-ct-.10)/3; for(let k=0;k<3;k++) front(a,b,.10+k*hh,.10+(k+1)*hh,"h"); }
+      else if(t==="fileur") B(a+.002,b-.002,z1-.018,z1,.10,bh-ct,body);
+      else if(t==="plaque"){ const ot=bh-ct-.13; B(a+.003,b-.003,z1-.02,z1,.12,ot,M("#1c1d1f",.2)); B(a+.05,b-.05,z1,z1+.003,.2,ot-.07,new THREE.MeshStandardMaterial({color:lin("#08090a"),roughness:.05,envMapIntensity:1.3}));
+        B(xm-.2,xm+.2,z1+.012,z1+.024,ot-.05,ot-.036,inox); for(const k of [-1,1]) B(xm+k*.17-.006,xm+k*.17+.006,z1,z1+.012,ot-.048,ot-.038,inox); front(a,b,ot,bh-ct,"h");
+        const hw=Math.min(.29,l/2-.03); B(xm-hw,xm+hw,zc-.25,zc+.25,bh,bh+.006,verre);
+        for(const [ox,oz,r] of [[-.14,-.11,.09],[.14,-.11,.07],[-.14,.12,.07],[.14,.12,.09]]){ const ring=new THREE.Mesh(new THREE.RingGeometry(r*.82,r,40),new THREE.MeshBasicMaterial({color:0x55585c})); ring.rotation.x=-Math.PI/2; ring.position.set(xm+ox*hw/.29,bh+.0075,zc+oz); g.add(ring); }
+        // hotte casquette, calée sous le plafond (rampant)
+        // hotte : sous un plafond droit, casquette à ~65 cm ; sous un rampant, elle épouse la pente
+        { const hd=Math.min(.5,d-.05), ceil=(lx,lz)=>{ const q=toW(lx,lz); return hAt(q[0],q[1])-(m.z||0); }, cMax=Math.max(ceil(xm,z0),ceil(xm,z0+hd)), bot=Math.min(bh+.65,Math.max(bh+.3,cMax-.2)), top=Math.min(bh+.85,cMax);
+          const nz=Math.ceil(hd/.05), geo=new THREE.BoxGeometry(2*hw+.02,1,hd,1,1,nz), P=geo.attributes.position;
+          for(let i=0;i<P.count;i++){ const lz=z0+hd/2+P.getZ(i); P.setY(i,P.getY(i)>0?Math.max(bot+.05,Math.min(top,ceil(xm,lz)-.004)):bot); }
+          geo.computeVertexNormals(); const hm=new THREE.Mesh(geo,inox); hm.position.set(xm,0,0); hm.castShadow=hm.receiveShadow=true; g.add(hm);
+          B(xm-hw+.02,xm+hw-.02,z0+.03,z0+hd-.03,bot-.004,bot,inoxD); B(xm-.08,xm-.02,z0+hd,z0+hd+.004,bot+.015,bot+.03,new THREE.MeshBasicMaterial({color:0x8be08b})); } }
+      else if(t==="evier"){ front(a,xm,.10,bh-ct,"v"); front(xm,b,.10,bh-ct,"v2");
+        const hw=Math.min(.38,l/2-.03); B(xm-hw,xm+hw,zc-.23,zc+.21,bh,bh+.004,inox);
+        for(const ox of [-hw*.5,hw*.5]) B(xm+ox-hw*.42,xm+ox+hw*.42,zc-.19,zc+.15,bh-.17,bh+.0045,inoxD);
+        const tx=xm; B(tx-.018,tx+.018,z0+.03,z0+.066,bh,bh+.2,inox); B(tx-.013,tx+.013,z0+.03,z0+.2,bh+.18,bh+.205,inox); B(tx-.011,tx+.011,z0+.18,z0+.2,bh+.12,bh+.19,inox); }
+      else front(a,b,.10,bh-ct,t==="angle"?"v2":"v");
+      a=b; } }
   else if(kind==="_dressing"){ const alu=new THREE.MeshStandardMaterial({color:lin("#b9bcbf"),roughness:.3,metalness:.9}), inner=M(hexShade(m.c,-5),.85), fd=z1-.06, zm=(z0+fd)/2, full=h>=2.3;
     B(x0,x0+.02,z0,fd,0,h,body); B(x1-.02,x1,z0,fd,0,h,body); if(full) B(x0,x1,z0,fd,h-.03,h,body);
     B(x0+.02,x1-.02,z0,fd-.01,0,.08,body); B(x0+.02,x1-.02,z0,z0+.01,.08,h-(full?.03:0),inner);
@@ -878,6 +906,9 @@ function build(){
       add(new THREE.Mesh(new THREE.BoxGeometry(.06,.1,.05),laiton)).position.set(cx-.09,e.z-.14,cz);
       add(new THREE.Mesh(new THREE.CylinderGeometry(.03,.025,.06,16),mat("#c4c7c9",{roughness:.4}))).position.set(cx-.09,e.z-.21,cz);
       continue; }
+    if(e.type==="cuisine_run"){ const k=e.dos||autoDos(e), along=(k==="y0"||k==="y1"), rot={y0:0,y1:180,x0:270,x1:90}[k];
+      const o=furnMesh({id:"_"+e.id,t:"_",g:"_run",x:e.x+e.w/2,y:e.y+e.d/2,z:e.z,w:along?e.w:e.d,d:along?e.d:e.w,h:e.h,rot,c:e.couleur,plan:e.plan,mods:e.modules});
+      o.traverse(c=>{ delete c.userData.meuble; }); group.add(o); continue; }
     if(e.type==="dressing"||e.type==="cuisine4"){ const k=e.dos||autoDos(e), along=(k==="y0"||k==="y1"), rot={y0:0,y1:180,x0:270,x1:90}[k];
       const o=furnMesh({id:"_"+e.id,t:"_",g:e.type==="dressing"?"_dressing":"cuisine",x:e.x+e.w/2,y:e.y+e.d/2,z:e.z,w:along?e.w:e.d,d:along?e.d:e.w,h:e.type==="dressing"?Math.min(e.h,CUT):e.h,rot,c:e.couleur});
       o.traverse(c=>{ delete c.userData.meuble; }); group.add(o);
@@ -889,7 +920,7 @@ function build(){
     if(e.type==="sanitaire"||e.type==="radiateur"){ const k=e.dos||autoDos(e), along=(k==="y0"||k==="y1"), rot={y0:0,y1:180,x0:270,x1:90}[k];
       const gk=e.type==="radiateur"?(/souffl/i.test(e.nom)?"_souffl":"_rad"):({cuvette:"_wc",douche:"_receveur",lavabo:"_lavabo"}[e.id]||(/wc/i.test(e.nom)?"_wc":/douche/i.test(e.nom)?"_receveur":/lavabo/i.test(e.nom)?"_lavabo":""));
       if(gk){ const o=furnMesh({id:"_"+e.id,t:"_",g:gk,x:e.x+e.w/2,y:e.y+e.d/2,z:e.z,w:along?e.w:e.d,d:along?e.d:e.w,h:e.h,rot,c:e.couleur}); o.traverse(c=>{ delete c.userData.meuble; }); group.add(o); continue; } }
-    addBox(group,e.x,e.x+e.w,e.y,e.y+e.d,e.z,z1,mat(e.couleur,{roughness:e.type==="cuisine"?.35:.8}));
+    (V.combles?addSlopedBox:addBox)(group,e.x,e.x+e.w,e.y,e.y+e.d,e.z,z1,mat(e.couleur,{roughness:e.type==="cuisine"?.35:.8}));
     if(e.plan && e.z+e.h+0.03<=CUT+0.03) addBox(group,e.x,e.x+e.w,e.y-0.02,e.y+e.d,e.z+e.h,e.z+e.h+0.03,mat(e.plan,{roughness:.4}));
   }
   for(const m of meubles()){ if(!furnVisible(m)) continue; const o=furnMesh(m); group.add(o); furnObjs[m.id]=o; }
@@ -1155,6 +1186,13 @@ function renderPlan(){
     if(e.type==="poutre"){ s+=`<rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.d}" fill="none" stroke="${muted}" stroke-width="0.015" stroke-dasharray="0.08 0.05"/>`; continue; }
     if(e.z>1.2) { s+=`<rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.d}" fill="none" stroke="${muted}" stroke-width="0.012" stroke-dasharray="0.05 0.04"/>`; continue; }
     s+=`<rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.d}" fill="${pan}" fill-opacity=".7" stroke="${ink}" stroke-width="0.015"/>`;
+    if(e.type==="cuisine_run"){ const k=e.dos||autoDos(e); let s0=0;
+      for(const [t,l] of (e.modules||[])){ const s1=s0+l; let r;
+        if(k==="x0") r=[e.x,e.y+e.d-s1,e.w,l]; else if(k==="x1") r=[e.x,e.y+s0,e.w,l]; else if(k==="y1") r=[e.x+e.w-s1,e.y,l,e.d]; else r=[e.x+s0,e.y,l,e.d];
+        const cx=r[0]+r[2]/2, cy=r[1]+r[3]/2;
+        if(t==="evier") s+=`<rect x="${(cx-Math.min(r[2],r[3])*.0-(r[2]>r[3]?r[2]*.4:r[2]*.3)).toFixed(3)}" y="${(cy-(r[3]>r[2]?r[3]*.4:r[3]*.3)).toFixed(3)}" width="${(r[2]>r[3]?r[2]*.8:r[2]*.6).toFixed(3)}" height="${(r[3]>r[2]?r[3]*.8:r[3]*.6).toFixed(3)}" fill="none" stroke="${muted}" stroke-width="0.012"/>`;
+        if(t==="plaque") for(const [ox,oy] of [[-.13,-.13],[.13,-.13],[-.13,.13],[.13,.13]]) s+=`<circle cx="${cx+ox}" cy="${cy+oy}" r="0.07" fill="none" stroke="${muted}" stroke-width="0.01"/>`;
+        s0=s1; } }
     if(e.type==="placard"||e.type==="dressing") s+=`<line x1="${e.x}" y1="${e.y}" x2="${e.x+e.w}" y2="${e.y+e.d}" stroke="${muted}" stroke-width="0.012"/><line x1="${e.x+e.w}" y1="${e.y}" x2="${e.x}" y2="${e.y+e.d}" stroke="${muted}" stroke-width="0.012"/>`; }
   if(V.combles){ s+=`<defs><pattern id="lowh" width="0.1" height="0.1" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line x1="0" y1="0" x2="0" y2="0.1" stroke="#4f8a3c" stroke-width="0.018" stroke-opacity=".7"/></pattern></defs>`;
     const st=0.1; for(const r of V.pieces){ const bb=bbox(r.poly);
