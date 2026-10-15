@@ -262,18 +262,20 @@ const CATALOGUE = [
     {t:"plan",      nom:"Plan de travail",      w:1.20,d:0.62,h:0.90,c:"#f2f1ec", g:"plan"},
     {t:"ilot",      nom:"Îlot central",         w:1.60,d:0.90,h:0.90,c:"#a7804f", g:"plan"},
     {t:"bar",       nom:"Bar",                  w:1.40,d:0.50,h:1.05,c:"#3a3d40", g:"bar"},
-    {t:"colonne",   nom:"Colonne / frigo",      w:0.60,d:0.62,h:2.10,c:"#f2f1ec", g:"box"},
+    {t:"colonne",   nom:"Frigo inox",           w:0.60,d:0.66,h:1.90,c:"#d9dcdf", g:"frigo"},
     {t:"tabouret",  nom:"Tabouret de bar",      w:0.40,d:0.40,h:0.75,c:"#1e1f21", g:"tabouret"}
   ]},
   {groupe:"Séjour", items:[
-    {t:"canape",    nom:"Canapé 3 places",      w:2.10,d:0.92,h:0.82,c:"#c9cbc8", g:"canape"},
-    {t:"angle",     nom:"Canapé d'angle",       w:2.40,d:1.60,h:0.82,c:"#c9cbc8", g:"angle"},
+    {t:"canape",    nom:"Canapé 3 places",      w:2.10,d:0.92,h:0.82,c:"#f2f1ec", g:"canape"},
+    {t:"angle",     nom:"Canapé d'angle",       w:2.40,d:1.60,h:0.82,c:"#f2f1ec", g:"angle"},
     {t:"fauteuil",  nom:"Fauteuil",             w:0.80,d:0.82,h:0.80,c:"#9aa88c", g:"canape"},
     {t:"tbasse",    nom:"Table basse",          w:1.00,d:0.55,h:0.40,c:"#a7804f", g:"table"},
     {t:"table4",    nom:"Table 4 pers.",        w:1.20,d:0.80,h:0.75,c:"#a7804f", g:"table"},
     {t:"table6",    nom:"Table 6 pers.",        w:1.60,d:0.90,h:0.75,c:"#a7804f", g:"table"},
     {t:"chaise",    nom:"Chaise",               w:0.45,d:0.50,h:0.88,c:"#3a3d40", g:"chaise"},
     {t:"tv",        nom:"Meuble TV",            w:1.60,d:0.40,h:0.50,c:"#f2f1ec", g:"box"},
+    {t:"tele55",    nom:"Télévision 55\" sur pied", w:1.23,d:0.25,h:0.78,z:0.50,c:"#1e1f21", g:"tele"},
+    {t:"tele65",    nom:"Télévision 65\" murale",   w:1.45,d:0.05,h:0.83,z:0.95,c:"#1e1f21", g:"tele", mural:true},
     {t:"etagere",   nom:"Étagère",              w:0.80,d:0.35,h:1.80,c:"#cfae84", g:"box"},
     {t:"tapis",     nom:"Tapis",                w:1.60,d:2.30,h:0.01,c:"#d9cdb8", g:"tapis"}
   ]},
@@ -418,8 +420,8 @@ const WOOD_SIZE=[2.6,1.3], woodCache={}; // la photo couvre environ 2,6 × 1,3 m
 function woodRep(t){ const c=t.clone(); c.needsUpdate=true; c.repeat.set(1/WOOD_SIZE[0],1/WOOD_SIZE[1]); return c; }
 // matières Poly Haven (CC0) : placage noyer et stuc blanc
 const PH={ready:false};
-(function(){ const L=new THREE.TextureLoader(), list={nd:"tex/noyer_diff.jpg",nn:"tex/noyer_nor.jpg",nr:"tex/noyer_rough.jpg",sd:"tex/stuc_diff.jpg",sn:"tex/stuc_nor.jpg",sr:"tex/stuc_rough.jpg"}; let n=0, N=Object.keys(list).length;
-  for(const k in list) L.load(list[k],t=>{ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=8; if(k==="nd"||k==="sd") t.encoding=THREE.sRGBEncoding; PH[k]=t;
+(function(){ const L=new THREE.TextureLoader(), list={nd:"tex/noyer_diff.jpg",nn:"tex/noyer_nor.jpg",nr:"tex/noyer_rough.jpg",sd:"tex/stuc_diff.jpg",sn:"tex/stuc_nor.jpg",sr:"tex/stuc_rough.jpg",cd:"tex/cuir_diff.jpg",cn:"tex/cuir_nor.jpg",cr:"tex/cuir_rough.jpg",fd:"tex/frigo_diff.jpg",fn:"tex/frigo_nor.jpg",fr:"tex/frigo_rough.jpg"}; let n=0, N=Object.keys(list).length;
+  for(const k in list) L.load(list[k],t=>{ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=8; if(k==="nd"||k==="sd"||k==="cd"||k==="fd") t.encoding=THREE.sRGBEncoding; PH[k]=t;
       if(++n===N){ PH.ready=true; for(const c in texCache) delete texCache[c]; for(const c in woodCache) delete woodCache[c]; for(const c in matCache) if(c[0]==="W"||c[0]==="F") delete matCache[c]; try{ build(); }catch(e){} } },undefined,()=>{}); })();
 function phRep(t,sx,sy){ const c=t.clone(); c.needsUpdate=true; c.repeat.set(sx,sy); return c; }
 // parquet noyer : le placage est découpé en lames de 18 cm décalées, avec joints
@@ -566,11 +568,22 @@ function furnMesh(m){
   const M=(c,r=.8)=>{ const wt=PH.ready&&WOODT[c.toLowerCase()];
     const mm=wt?new THREE.MeshStandardMaterial({color:lin(wt),map:PH.nd,normalMap:PH.nn,normalScale:new THREE.Vector2(.4,.4),roughnessMap:PH.nr,roughness:.9,envMapIntensity:.8}):new THREE.MeshStandardMaterial({color:lin(c),roughness:r}); if(sel){ mm.emissive=new THREE.Color(SEL_EMISSIVE); mm.emissiveIntensity=.28; } return mm; };
   const body=M(m.c), light=M(hexShade(m.c,22)), dark=M(hexShade(m.c,-30)), top=M("#dcdad4",.4), white=M("#f6f5f1"), leg=M("#2b2d30",.5);
-  const B=(a,b,c,dd,e,f,mm)=>addBox(g,a,b,c,dd,e,f,mm);
+  const B=(a,b,c,dd,e,f,mm)=>{ const me=addBox(g,a,b,c,dd,e,f,mm); worldUV(me.geometry); return me; };
+  const leather=c=>{ const mm=PH.ready?new THREE.MeshStandardMaterial({color:lin(c),map:phRep(PH.cd,1/0.7,1/0.7),normalMap:phRep(PH.cn,1/0.7,1/0.7),normalScale:new THREE.Vector2(.8,.8),roughnessMap:phRep(PH.cr,1/0.7,1/0.7),roughness:1,envMapIntensity:.7}):new THREE.MeshStandardMaterial({color:lin(c),roughness:.55});
+    if(sel){ mm.emissive=new THREE.Color(SEL_EMISSIVE); mm.emissiveIntensity=.28; } return mm; };
+  const steel=()=>{ const mm=PH.ready?new THREE.MeshStandardMaterial({color:lin("#e6e8ea"),map:phRep(PH.fd,1/0.9,1/0.9),normalMap:phRep(PH.fn,1/0.9,1/0.9),normalScale:new THREE.Vector2(.3,.3),roughnessMap:phRep(PH.fr,1/0.9,1/0.9),roughness:1.6,metalness:1,envMapIntensity:1.1}):new THREE.MeshStandardMaterial({color:lin("#c9ccce"),roughness:.3,metalness:.9});
+    if(sel){ mm.emissive=new THREE.Color(SEL_EMISSIVE); mm.emissiveIntensity=.2; } return mm; };
   if(kind==="plan"){ B(x0+.01,x1-.01,z0,z1-.03,0.10,h-.04,body); B(x0,x1,z0,z1,h-.04,h,top); B(x0+.01,x1-.01,z0,z1-.08,0,0.10,dark); }
   else if(kind==="bar"){ B(x0,x1,z0,z0+0.12,0,h-.04,body); B(x0,x1,z0,z1,h-.04,h,top); }
-  else if(kind==="canape"){ const arm=Math.min(0.18,w*0.2); B(x0,x1,z0,z1,0.06,0.40,body); B(x0+arm,x1-arm,z0+0.2,z1-0.02,0.40,0.47,light); B(x0,x1,z0,z0+0.2,0.40,h,body); B(x0,x0+arm,z0,z1,0.40,0.62,body); B(x1-arm,x1,z0,z1,0.40,0.62,body); B(x0+.04,x1-.04,z0+.04,z1-.04,0,0.06,leg); }
-  else if(kind==="angle"){ const dp=Math.min(0.92,d); B(x0,x1,z0,z0+dp,0.06,0.40,body); B(x1-dp,x1,z0+dp,z1,0.06,0.40,body);
+  else if(kind==="frigo"){ const st=steel(), seam=M("#2a2c2e",.6), hd=new THREE.MeshStandardMaterial({color:lin("#b8bcc0"),roughness:.25,metalness:1,envMapIntensity:1.2}), split=h*0.64;
+    B(x0,x1,z0,z1-0.06,0,h,M("#d0d2d4",.5)); B(x0+0.002,x1-0.002,z1-0.06,z1,0.06,split-0.006,st); B(x0+0.002,x1-0.002,z1-0.06,z1,split+0.006,h-0.005,st);
+    B(x0+0.002,x1-0.002,z1-0.055,z1-0.005,0,0.06,seam); B(x0+0.002,x1-0.002,z1-0.06,z1-0.01,split-0.006,split+0.006,seam);
+    const hx=x1-0.07; for(const [a,b2] of [[split+0.12,Math.min(h-0.12,split+0.12+0.42)],[split-0.38,split-0.1]]){ B(hx-0.012,hx+0.012,z1+0.025,z1+0.045,a,b2,hd); B(hx-0.01,hx+0.01,z1,z1+0.025,a+0.02,a+0.05,hd); B(hx-0.01,hx+0.01,z1,z1+0.025,b2-0.05,b2-0.02,hd); } }
+  else if(kind==="tele"){ const frame=M("#151617",.4), screen=new THREE.MeshStandardMaterial({color:lin("#0b0c0e"),roughness:.12,metalness:.3,envMapIntensity:1.3}), th=Math.min(0.05,d);
+    if(d>0.1){ B(-0.15,0.15,z1-0.2,z1-0.02,0,0.015,frame); B(-0.03,0.03,-0.02,0.0,0.015,0.12,frame); }
+    const zc=d>0.1?0:z0+th/2; B(x0,x1,zc-th/2,zc+th/2,d>0.1?0.12:0,h,frame); const sc=B(x0+0.012,x1-0.012,zc+th/2-0.001,zc+th/2+0.002,(d>0.1?0.12:0)+0.012,h-0.012,screen); sc.castShadow=false; }
+  else if(kind==="canape"){ const arm=Math.min(0.18,w*0.2), body=leather(m.c), light=leather(hexShade(m.c,10)); B(x0,x1,z0,z1,0.06,0.40,body); B(x0+arm,x1-arm,z0+0.2,z1-0.02,0.40,0.47,light); B(x0,x1,z0,z0+0.2,0.40,h,body); B(x0,x0+arm,z0,z1,0.40,0.62,body); B(x1-arm,x1,z0,z1,0.40,0.62,body); B(x0+.04,x1-.04,z0+.04,z1-.04,0,0.06,leg); }
+  else if(kind==="angle"){ const dp=Math.min(0.92,d), body=leather(m.c), light=leather(hexShade(m.c,10)); B(x0,x1,z0,z0+dp,0.06,0.40,body); B(x1-dp,x1,z0+dp,z1,0.06,0.40,body);
     B(x0+0.18,x1-0.02,z0+0.2,z0+dp,0.40,0.47,light); B(x1-dp+0.02,x1-0.02,z0+dp,z1-0.02,0.40,0.47,light);
     B(x0,x1,z0,z0+0.2,0.40,h,body); B(x0,x0+0.18,z0,z0+dp,0.40,0.62,body); B(x0+.04,x1-.04,z0+.04,z0+dp-.04,0,0.06,leg); }
   else if(kind==="lit"){ B(x0,x1,z0,z1,0.08,0.32,body); B(x0+.02,x1-.02,z0+.08,z1-.02,0.32,0.54,white); B(x0,x1,z0,z0+0.07,0,1.0,body);
@@ -942,7 +955,9 @@ function furnSymbol(m,ink,muted,pan,selC){
   if(kind==="chaise") s+=L(x0,z0+0.05,x0+w,z0+0.05);
   if(kind==="box" && m.h>1.2){ s+=L(x0,z0,x0+w,z0+d); s+=L(x0+w,z0,x0,z0+d); }
   const label=CAT[m.t]?CAT[m.t].nom:"Meuble";
-  if(kind!=="clim" && w>=0.7 && d>=0.4) s+=`<text x="0" y="${Math.min(d/2-0.08,0.06)}" text-anchor="middle" font-size="0.12" fill="${ink}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>${label}</text>`;
+  if(kind==="tele") s+=`<text x="0" y="0.04" text-anchor="middle" font-size="0.11" font-weight="600" fill="${st}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>TV</text>`;
+  if(kind==="frigo") s+=`<text x="0" y="0.04" text-anchor="middle" font-size="0.1" fill="${ink}">Frigo</text>`;
+  if(kind!=="clim" && kind!=="tele" && kind!=="frigo" && w>=0.7 && d>=0.4) s+=`<text x="0" y="${Math.min(d/2-0.08,0.06)}" text-anchor="middle" font-size="0.12" fill="${ink}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>${label}</text>`;
   return s+"</g>";
 }
 function renderPlan(){
