@@ -110,6 +110,9 @@ window.APPART = {
   // 15/10 — le meuble vasque remplace l'ancien lavabo de la salle d'eau
   P.elements = P.elements.filter(e => e.id !== "lavabo");
 
+  // 15/10 — chauffage par les clims : radiateurs muraux du séjour et des chambres déposés (le soufflant de la salle d'eau reste)
+  P.elements = P.elements.filter(e => !["rad_sej", "rad_ch1", "rad_ch2"].includes(e.id));
+
   // 14/10 — placard décalé au fond de la chambre, sur le même mur
   const pl = el("plac1"); pl.y = 6.25 - pl.d;
 
