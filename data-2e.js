@@ -16,10 +16,10 @@ window.APPART = {
         pied: 1.20,                  // hauteur au pied des pentes, contre les murs bas
         pentes: [
           // face intérieure du mur bas, normale vers l'intérieur, distance où l'on atteint 1,80 m.
-          // 15/10 — recalé pour retrouver la surface Carrez des papiers (28,6 m²) : le plan d'architecte
-          // dessine la ligne 1,80 m vers 1,20–1,30 m du mur (≈ 32 m² Carrez) ; à confirmer au mètre sur place.
-          { id: "pente_g", nom: "Pente côté gauche", a: [0, -0.3],    b: [0, 6.55],    n: [1, 0],  d180: 1.65 },
-          { id: "pente_d", nom: "Pente côté droit",  a: [7.03, -0.3], b: [7.03, 6.55], n: [-1, 0], d180: 1.54 }
+          // 15/10 — repère donné sur place (salle d'eau) : le plafond atteint sa hauteur maxi au-dessus du lavabo,
+          // à ≈ 2,0 m du mur bas → pente plus raide (1,80 m à 1,33 m du mur), appliquée à toutes les mansardes.
+          { id: "pente_g", nom: "Pente côté gauche", a: [0, -0.3],    b: [0, 6.55],    n: [1, 0],  d180: 1.33 },
+          { id: "pente_d", nom: "Pente côté droit",  a: [7.03, -0.3], b: [7.03, 6.55], n: [-1, 0], d180: 1.33 }
         ],
         // lucarnes : devant chaque fenêtre verticale le plafond reste à la hauteur maximale
         lucarnes: [

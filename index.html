@@ -386,7 +386,7 @@ function hAt(x,y){
   for(const l of (C.lucarnes||[])) if(x>=l.x0&&x<=l.x1&&y>=l.y0&&y<=l.y1) return H;
   let h=H;
   for(const p of C.pentes){ const dx=p.b[0]-p.a[0], dy=p.b[1]-p.a[1], L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L;
-    const t=(x-p.a[0])*ux+(y-p.a[1])*uy; if(t<-0.6||t>L+0.6) continue;
+    const t=(x-p.a[0])*ux+(y-p.a[1])*uy; const mg=p.marge??0.6; if(t<-mg||t>L+mg) continue;
     const d=Math.max(0,(x-p.a[0])*p.n[0]+(y-p.a[1])*p.n[1]);
     h=Math.min(h, C.pied+(1.80-C.pied)*d/p.d180); }
   return Math.max(C.pied,h);
