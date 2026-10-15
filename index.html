@@ -294,7 +294,8 @@ const CATALOGUE = [
   {groupe:"Salle d'eau", items:[
     {t:"vasque",    nom:"Meuble vasque",        w:0.80,d:0.46,h:0.85,c:"#f2f1ec", g:"plan"},
     {t:"douche",    nom:"Douche à l'italienne", w:0.90,d:1.20,h:0.02,c:"#e9e8e3", g:"tapis"},
-    {t:"lavelinge", nom:"Lave-linge",           w:0.60,d:0.60,h:0.85,c:"#f2f1ec", g:"box"}
+    {t:"lavelinge", nom:"Lave-linge",           w:0.60,d:0.60,h:0.85,c:"#f2f1ec", g:"box"},
+    {t:"secheserv", nom:"Sèche-serviettes",     w:0.50,d:0.10,h:1.20,z:0.30,c:"#f4f4f0", g:"secheserv", mural:true}
   ]}
 ];
 const CAT = {}; CATALOGUE.forEach(g=>g.items.forEach(i=>CAT[i.t]=i));
@@ -653,6 +654,9 @@ function furnMesh(m){
       for(const bx of [x0+.12,x1-.16]) B(bx,bx+.04,z0,pz+.02,h*.65,h*.65+.04,wh); C(.016,.016,.07,x1-.03,-.045,(pz+z1)/2,chrome); C(.02,.02,.04,x1-.03,-.1,(pz+z1)/2,M("#f4f4f2",.3)); } }
   else if(kind==="plan"){ B(x0+.01,x1-.01,z0,z1-.03-.018,0.10,h-.04,body); B(x0,x1,z0,z1,h-.04,h,top); B(x0+.03,x1-.03,z0,z1-.08,0,0.10,dark);
     const n=Math.max(1,Math.round(w/0.6)); for(let i=0;i<n;i++){ const a=x0+.01+i*(w-.02)/n; B(a+.002,a+(w-.02)/n-.002,z1-.048,z1-.03,.103,h-.043,body); const xm=a+(w-.02)/n/2; B(xm-.08,xm+.08,z1-.03,z1-.02,h-.1,h-.088,chrome); } }
+  else if(kind==="secheserv"){ const tb=M(m.c,.3), zt=z1-.035; for(const tx of [x0+.02,x1-.02]) C(.016,.016,h,tx,h/2,zt,tb,0,0,16);
+    for(let y=.06;y<h-.03;y+=(y<h*.45?.055:.075)) C(.011,.011,w-.04,0,y,zt,tb,0,Math.PI/2,12);
+    for(const y of [.12,h-.12]) for(const tx of [x0+.02,x1-.02]) B(tx-.012,tx+.012,z0,zt,y-.012,y+.012,chrome); C(.014,.014,.05,x1-.02,-.025,zt,chrome); }
   else if(kind==="bar"){ B(x0,x1,z0,z0+0.12,0,h-.04,body); B(x0,x1,z0,z1,h-.04,h,top); C(.013,.013,w-.12,0,.22,z0+.2,chrome,0,Math.PI/2); for(const bx of [x0+.12,x1-.12]) B(bx-.008,bx+.008,z0+.12,z0+.2,.214,.226,chrome); }
   else if(kind==="frigo"){ const st=steel(), seam=M("#2a2c2e",.6), hd=new THREE.MeshStandardMaterial({color:lin("#b8bcc0"),roughness:.25,metalness:1,envMapIntensity:1.2}), split=h*0.64;
     B(x0,x1,z0,z1-0.06,0,h,st); B(x0+0.002,x1-0.002,z1-0.06,z1,0.06,split-0.006,st); B(x0+0.002,x1-0.002,z1-0.06,z1,split+0.006,h-0.005,st);
@@ -1086,8 +1090,9 @@ function furnSymbol(m,ink,muted,pan,selC){
   if(kind==="cuisine"){ const mw=w/4, zf=Math.min(d,0.6)+z0; for(let i=1;i<4;i++) s+=L(x0+i*mw,z0,x0+i*mw,zf);
     s+=R(x0+mw*3.5-0.2,z0+0.12,0.32,0.34); for(const [ox,oz] of [[-.14,-.11],[.14,-.11],[-.14,.12],[.14,.12]]) s+=`<circle cx="${x0+mw*1.5+ox}" cy="${(z0+zf)/2+oz}" r="0.07" fill="none" stroke="${muted}" stroke-width="0.01"/>`;
     s+=`<rect x="${x0}" y="${z0}" width="${w}" height="${Math.min(.35,d)}" fill="none" stroke="${muted}" stroke-width="0.01" stroke-dasharray="0.05 0.04"/>`; }
+  if(kind==="secheserv") s+=`<text x="0" y="0.035" text-anchor="middle" font-size="0.08" fill="${ink}">S-S</text>`;
   if(kind==="frigo") s+=`<text x="0" y="0.04" text-anchor="middle" font-size="0.1" fill="${ink}">Frigo</text>`;
-  if(kind!=="clim" && kind!=="tele" && kind!=="frigo" && kind!=="cuisine" && w>=0.7 && d>=0.4) s+=`<text x="0" y="${Math.min(d/2-0.08,0.06)}" text-anchor="middle" font-size="0.12" fill="${ink}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>${label}</text>`;
+  if(kind!=="clim" && kind!=="tele" && kind!=="frigo" && kind!=="cuisine" && kind!=="secheserv" && w>=0.7 && d>=0.4) s+=`<text x="0" y="${Math.min(d/2-0.08,0.06)}" text-anchor="middle" font-size="0.12" fill="${ink}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>${label}</text>`;
   return s+"</g>";
 }
 function renderPlan(){
