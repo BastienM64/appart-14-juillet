@@ -29,8 +29,9 @@ window.APPART = {
         { id: "c_ch1_ch2",  nom: "Cloison chambre 1 / chambre 2", a: [2.46, 3.41], b: [7.05, 3.41],  ep: 0.10, type: "cloison" },
         { id: "c_sej_ch2",  nom: "Cloison séjour / chambre 2", a: [2.495, 3.46],  b: [2.495, 6.25], ep: 0.07, type: "cloison" },
         { id: "c_douche",   nom: "Cloison niche de douche",    a: [-1.30, 1.12],  b: [-0.56, 1.12], ep: 0.07, type: "cloison" },
-        { id: "c_sde_sas",  nom: "Cloison salle d'eau / dégagement WC", a: [-1.30, 2.78], b: [-0.56, 2.78], ep: 0.07, type: "cloison" },
-        { id: "c_sas_wc",   nom: "Cloison dégagement / WC",    a: [-1.30, 4.90],  b: [-0.56, 4.90], ep: 0.07, type: "cloison" }
+        { id: "c_sde_sas",  nom: "Cloison salle d'eau / dégagement WC", a: [-1.30, 2.73], b: [-0.56, 2.73], ep: 0.07, type: "cloison" },
+        { id: "m_fond_wc",  nom: "Fond du WC (gaine / maçonnerie)", a: [-1.45, 6.12], b: [-0.28, 6.12], ep: 0.25, type: "porteur" },
+        { id: "c_sas_wc",   nom: "Cloison dégagement / WC",    a: [-1.30, 4.85],  b: [-0.56, 4.85], ep: 0.07, type: "cloison" }
       ],
 
       ouvertures: [
@@ -56,11 +57,11 @@ window.APPART = {
         { id: "ch2",    nom: "Chambre 2",        sol: "chene-fonce",     murs: "#e6dcc8",
           poly: [[2.53, 3.46], [7.05, 3.46], [7.05, 6.25], [2.53, 6.25]] },
         { id: "sde",    nom: "Salle d'eau",      sol: "carrelage-blanc", murs: "#eeeeea",
-          poly: [[-1.30, 0], [-0.56, 0], [-0.56, 2.745], [-1.30, 2.745]] },
+          poly: [[-1.30, 0], [-0.56, 0], [-0.56, 2.695], [-1.30, 2.695]] },
         { id: "sas",    nom: "Dégagement WC",           sol: "carrelage-blanc", murs: "#eeeeea",
-          poly: [[-1.30, 2.815], [-0.56, 2.815], [-0.56, 4.865], [-1.30, 4.865]] },
+          poly: [[-1.30, 2.765], [-0.56, 2.765], [-0.56, 4.815], [-1.30, 4.815]] },
         { id: "wc",     nom: "WC",               sol: "carrelage-blanc", murs: "#eeeeea",
-          poly: [[-1.30, 4.935], [-0.56, 4.935], [-0.56, 6.25], [-1.30, 6.25]] }
+          poly: [[-1.30, 4.885], [-0.56, 4.885], [-0.56, 5.995], [-1.30, 5.995]] }
       ],
 
       elements: [
@@ -71,10 +72,10 @@ window.APPART = {
         { id: "rad_ch2",   nom: "Radiateur chambre 2",    type: "radiateur", x: 6.95, y: 4.85, w: 0.10, d: 0.55, z: 0.15, h: 0.45, couleur: "#f4f4f0" },
         { id: "plac1",     nom: "Placard chambre 2",      type: "placard",   x: 2.53, y: 4.27, w: 0.82, d: 1.09, z: 0.00, h: 2.40, couleur: "#f0eee8" },
         { id: "douche",    nom: "Receveur de douche",     type: "sanitaire", x: -1.27, y: 0.03, w: 0.68, d: 1.02, z: 0.00, h: 0.15, couleur: "#f7f7f5" },
-        { id: "lavabo",    nom: "Lavabo",                 type: "sanitaire", x: -1.18, y: 2.30, w: 0.50, d: 0.44, z: 0.80, h: 0.15, couleur: "#f7f7f5" },
+        { id: "lavabo",    nom: "Lavabo",                 type: "sanitaire", x: -1.18, y: 2.25, w: 0.50, d: 0.44, z: 0.80, h: 0.15, couleur: "#f7f7f5" },
         { id: "rad_sde",   nom: "Radiateur soufflant",    type: "radiateur", x: -0.66, y: 1.35, w: 0.10, d: 0.45, z: 1.40, h: 0.55, couleur: "#f4f4f0" },
         { id: "ballon",    nom: "Ballon d'eau chaude",    type: "ballon",    x: -1.20, y: 2.84, w: 0.50, d: 0.50, z: 1.00, h: 1.20, couleur: "#f6f6f3" },
-        { id: "cuvette",   nom: "WC",                     type: "sanitaire", x: -1.13, y: 5.68, w: 0.40, d: 0.55, z: 0.00, h: 0.40, couleur: "#f7f7f5" }
+        { id: "cuvette",   nom: "WC",                     type: "sanitaire", x: -1.13, y: 5.44, w: 0.40, d: 0.55, z: 0.00, h: 0.40, couleur: "#f7f7f5" }
       ]
     },
   }

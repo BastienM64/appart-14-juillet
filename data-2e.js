@@ -15,9 +15,11 @@ window.APPART = {
       combles: {
         pied: 1.20,                  // hauteur au pied des pentes, contre les murs bas
         pentes: [
-          // face intérieure du mur bas, normale vers l'intérieur, distance où l'on atteint 1,80 m (lignes vertes du plan)
-          { id: "pente_g", nom: "Pente côté gauche", a: [0, -0.3],    b: [0, 6.55],    n: [1, 0],  d180: 1.30 },
-          { id: "pente_d", nom: "Pente côté droit",  a: [7.03, -0.3], b: [7.03, 6.55], n: [-1, 0], d180: 1.22 }
+          // face intérieure du mur bas, normale vers l'intérieur, distance où l'on atteint 1,80 m.
+          // 15/10 — recalé pour retrouver la surface Carrez des papiers (28,6 m²) : le plan d'architecte
+          // dessine la ligne 1,80 m vers 1,20–1,30 m du mur (≈ 32 m² Carrez) ; à confirmer au mètre sur place.
+          { id: "pente_g", nom: "Pente côté gauche", a: [0, -0.3],    b: [0, 6.55],    n: [1, 0],  d180: 1.65 },
+          { id: "pente_d", nom: "Pente côté droit",  a: [7.03, -0.3], b: [7.03, 6.55], n: [-1, 0], d180: 1.54 }
         ],
         // lucarnes : devant chaque fenêtre verticale le plafond reste à la hauteur maximale
         lucarnes: [
@@ -34,16 +36,16 @@ window.APPART = {
         { id: "m_gauche", nom: "Mur gauche (bas de pente)",      a: [-0.15, -0.20], b: [-0.15, 6.39], ep: 0.30, type: "porteur" },
         { id: "m_fond",   nom: "Mur du fond",                    a: [-0.30, 6.39],  b: [7.33, 6.39],  ep: 0.30, type: "porteur" },
 
-        { id: "c_sde_deg", nom: "Cloison salle d'eau / dégagement", a: [3.06, 0.00],  b: [3.06, 2.56],  ep: 0.08, type: "cloison" },
-        { id: "c_deg_ch",  nom: "Cloison dégagement / chambre",     a: [3.94, 0.00],  b: [3.94, 3.35],  ep: 0.06, type: "cloison" },
-        { id: "c_sde_bas", nom: "Cloison salle d'eau / cellier",    a: [0.00, 2.53],  b: [3.10, 2.53],  ep: 0.06, type: "cloison" },
+        { id: "c_sde_deg", nom: "Cloison salle d'eau / dégagement", a: [3.04, 0.00],  b: [3.04, 2.56],  ep: 0.08, type: "cloison" },
+        { id: "c_deg_ch",  nom: "Cloison dégagement / chambre",     a: [3.89, 0.00],  b: [3.89, 3.35],  ep: 0.06, type: "cloison" },
+        { id: "c_sde_bas", nom: "Cloison salle d'eau / cellier",    a: [0.00, 2.53],  b: [3.08, 2.53],  ep: 0.06, type: "cloison" },
         { id: "c_cel_d",   nom: "Cloison cellier / dégagement",     a: [2.18, 2.56],  b: [2.18, 3.72],  ep: 0.06, type: "cloison" },
         { id: "c_cel_bas", nom: "Cloison cellier / cuisine",        a: [0.00, 3.69],  b: [2.21, 3.69],  ep: 0.06, type: "cloison" },
-        { id: "c_ch_bas",  nom: "Cloison chambre / séjour",         a: [3.91, 3.315], b: [7.03, 3.315], ep: 0.07, type: "cloison" }
+        { id: "c_ch_bas",  nom: "Cloison chambre / séjour",         a: [3.86, 3.315], b: [7.03, 3.315], ep: 0.07, type: "cloison" }
       ],
 
       ouvertures: [
-        { id: "p_entree", nom: "Porte d'entrée",     type: "porte",   mur: "m_palier",  at: 3.44, w: 0.74, h: 2.00, charniere: "a", sens: 1 },
+        { id: "p_entree", nom: "Porte d'entrée",     type: "porte",   mur: "m_palier",  at: 3.40, w: 0.74, h: 2.00, charniere: "a", sens: 1 },
         { id: "p_sde",    nom: "Porte salle d'eau",  type: "porte",   mur: "c_sde_bas", at: 2.29, w: 0.71, h: 2.00, charniere: "b", sens: -1 },
         { id: "p_ch",     nom: "Porte chambre",      type: "porte",   mur: "c_deg_ch",  at: 2.52, w: 0.75, h: 2.00, charniere: "b", sens: -1 },
         { id: "p_cel",    nom: "Porte cellier (côté cuisine)", type: "porte", mur: "c_cel_bas", at: 0.83, w: 0.60, h: 2.00, charniere: "a", sens: -1 },
@@ -55,16 +57,16 @@ window.APPART = {
       ],
 
       pieces: [
-        { id: "sde",    nom: "Salle d'eau",      sol: "carrelage-rose",  murs: "#e2c2bb", faience: { c: "#d9b2aa", t: 0.20 }, poly: [[0,0],[3.02,0],[3.02,2.50],[0,2.50]] },
-        { id: "deg",    nom: "Dégagement",       sol: "carrelage-blanc-xl",           murs: "#ece6da", poly: [[3.10,0],[3.91,0],[3.91,3.35],[2.21,3.35],[2.21,2.56],[3.10,2.56]] },
+        { id: "sde",    nom: "Salle d'eau",      sol: "carrelage-rose",  murs: "#e2c2bb", faience: { c: "#d9b2aa", t: 0.20 }, poly: [[0,0],[3.00,0],[3.00,2.50],[0,2.50]] },
+        { id: "deg",    nom: "Dégagement",       sol: "carrelage-blanc-xl",           murs: "#ece6da", poly: [[3.08,0],[3.86,0],[3.86,3.35],[2.21,3.35],[2.21,2.56],[3.08,2.56]] },
         { id: "cel",    nom: "Cellier",          sol: "carrelage-blanc", murs: "#eeeeea", poly: [[0,2.56],[2.15,2.56],[2.15,3.66],[0,3.66]] },
-        { id: "ch",     nom: "Chambre",          sol: "chene",           murs: "#ece6da", poly: [[3.97,0],[7.03,0],[7.03,3.28],[3.97,3.28]] },
+        { id: "ch",     nom: "Chambre",          sol: "chene",           murs: "#ece6da", poly: [[3.92,0],[7.03,0],[7.03,3.28],[3.92,3.28]] },
         { id: "sejour", nom: "Cuisine / Séjour", sol: "carrelage-blanc-xl",           murs: "#ece6da", poly: [[0,3.72],[2.21,3.72],[2.21,3.35],[7.03,3.35],[7.03,6.24],[0,6.24]] }
       ],
 
       elements: [
         { id: "pl_sde",   nom: "Placard salle d'eau",   type: "placard",   x: 0.00, y: 0.00, w: 0.55, d: 1.49, z: 0, h: 1.20, couleur: "#f0eee8" },
-        { id: "douche",   nom: "Receveur de douche",    type: "sanitaire", x: 2.23, y: 0.00, w: 0.79, d: 0.79, z: 0, h: 0.12, couleur: "#f7f7f5" },
+        { id: "douche",   nom: "Receveur de douche",    type: "sanitaire", x: 2.21, y: 0.00, w: 0.79, d: 0.79, z: 0, h: 0.12, couleur: "#f7f7f5" },
         { id: "lavabo",   nom: "Lavabo",                type: "sanitaire", x: 1.50, y: 0.00, w: 0.60, d: 0.48, z: 0.80, h: 0.15, couleur: "#f7f7f5" },
         { id: "cuvette",  nom: "WC",                    type: "sanitaire", x: 0.02, y: 1.72, w: 0.62, d: 0.40, z: 0, h: 0.40, couleur: "#f7f7f5" },
         { id: "pl_ch",    nom: "Placard chambre",       type: "placard",   x: 6.48, y: 0.00, w: 0.55, d: 1.35, z: 0, h: 1.30, couleur: "#f0eee8" },
