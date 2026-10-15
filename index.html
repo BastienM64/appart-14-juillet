@@ -257,6 +257,8 @@ const SOLS = {
   "noyer":           {nom:"Parquet noyer",       base:"#7b5b45", taille:1.0, kind:"lames"},
   "carrelage-blanc": {nom:"Carrelage blanc 60",  base:"#e9e8e3", taille:1.2, kind:"dalles", n:2},
   "carrelage-gris":  {nom:"Carrelage gris 60",   base:"#8f918e", taille:1.2, kind:"dalles", n:2},
+  "carrelage-blanc-xl": {nom:"Grand carrelage blanc 80", base:"#eceae5", taille:1.6, kind:"dalles", n:2},
+  "carrelage-rose":  {nom:"Carrelage rose 20",   base:"#d6aea6", taille:0.8, kind:"dalles", n:4},
   "carreaux-ciment": {nom:"Carreaux ciment",     base:"#d8d2c4", taille:0.8, kind:"ciment"},
   "tomettes":        {nom:"Tomettes",            base:"#b4643f", taille:0.8, kind:"tomettes"}
 };
@@ -512,7 +514,16 @@ function plasterTex(){ if(_plaster) return _plaster; const c=document.createElem
   for(let i=0;i<30;i++){ const v=236+Math.floor(R()*14); g.fillStyle=`rgba(${v},${v},${v},.05)`; g.beginPath(); g.arc(R()*256,R()*256,14+R()*30,0,7); g.fill(); }
   const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.encoding=THREE.sRGBEncoding; t.anisotropy=4; return _plaster=t; }
 const STUC_M=1.6; // la photo de stuc couvre environ 1,6 m
+// faïence murale : « tile:<couleur>:<taille du carreau> » (si la pièce n'a pas été repeinte dans cette variante)
+function wallLook(r){ const o=(S.choix[vid]||{})[r.id]||{}; return (!o.murs && r.faience)?`tile:${r.faience.c}:${r.faience.t||0.2}`:style(r).murs; }
+const baseCol=c=>String(c).startsWith("tile:")?c.split(":")[1]:c;
+function tileMat(key,dbl){ const [,col,ts]=key.split(":"), t=+ts||0.2, n=4, cv=document.createElement("canvas"); cv.width=cv.height=512; const g=cv.getContext("2d"), R=rnd(col.length*13+n), q=512/n;
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++){ g.fillStyle=shade(col,(R()-.5)*10); g.fillRect(i*q,j*q,q,q); const gr=g.createLinearGradient(i*q,j*q,i*q+q,j*q+q); gr.addColorStop(0,"rgba(255,255,255,.07)"); gr.addColorStop(1,"rgba(0,0,0,.05)"); g.fillStyle=gr; g.fillRect(i*q,j*q,q,q); }
+  g.fillStyle=shade(col,-38); for(let i=0;i<=n;i++){ g.fillRect(i*q-2,0,4,512); g.fillRect(0,i*q-2,512,4); }
+  const tx=new THREE.CanvasTexture(cv); tx.wrapS=tx.wrapT=THREE.RepeatWrapping; tx.repeat.set(1/(t*n),1/(t*n)); tx.anisotropy=4; tx.encoding=THREE.sRGBEncoding;
+  return new THREE.MeshStandardMaterial({map:tx,roughness:.28,metalness:0,envMapIntensity:.9,side:dbl?THREE.DoubleSide:THREE.FrontSide}); }
 function wallMat(color,dbl){ const k="W"+color+(dbl?"d":"");
+  if(String(color).startsWith("tile:")) return matCache[k]||(matCache[k]=tileMat(color,dbl));
   if(!matCache[k] && PH.ready) matCache[k]=new THREE.MeshStandardMaterial({color:lin(color),map:phRep(PH.sd,1/STUC_M,1/STUC_M),normalMap:phRep(PH.sn,1/STUC_M,1/STUC_M),normalScale:new THREE.Vector2(.4,.4),roughnessMap:phRep(PH.sr,1/STUC_M,1/STUC_M),roughness:1,metalness:0,side:dbl?THREE.DoubleSide:THREE.FrontSide,envMapIntensity:.45});
   if(!matCache[k]) matCache[k]=new THREE.MeshStandardMaterial({color:lin(color),roughness:.92,metalness:0,map:plasterTex(),bumpMap:plasterTex(),bumpScale:0.0012,side:dbl?THREE.DoubleSide:THREE.FrontSide,envMapIntensity:.45}); return matCache[k]; }
 const WOODWORK="#f7f6f2";
@@ -577,7 +588,7 @@ const SEL_EMISSIVE=0xcf5b26;
 function sideRoom(w,c,n,sign){ const p=[c[0]+n[0]*(w.ep/2+0.04)*sign, c[1]+n[1]*(w.ep/2+0.04)*sign]; return roomAt(p)||null; }
 function colorRuns(w,s0,s1){
   const f=frame(w), n=Math.max(1,Math.ceil((s1-s0)/0.05)), N=[], Sd=[];
-  for(let i=0;i<n;i++){ const c=ptAt(w,s0+(s1-s0)*(i+.5)/n), a=sideRoom(w,c,f.n,1), b=sideRoom(w,c,f.n,-1); N.push(a?style(a).murs:null); Sd.push(b?style(b).murs:null); }
+  for(let i=0;i<n;i++){ const c=ptAt(w,s0+(s1-s0)*(i+.5)/n), a=sideRoom(w,c,f.n,1), b=sideRoom(w,c,f.n,-1); N.push(a?wallLook(a):null); Sd.push(b?wallLook(b):null); }
   const fill=A=>{ let last=null; for(let i=0;i<A.length;i++){ if(A[i]===null) A[i]=last; else last=A[i]; } last=null; for(let i=A.length-1;i>=0;i--){ if(A[i]===null) A[i]=last; else last=A[i]; } for(let i=0;i<A.length;i++) if(A[i]===null) A[i]=EXT_COLOR; };
   fill(N); fill(Sd); const runs=[];
   for(let i=0;i<n;i++){ const a=s0+(s1-s0)*i/n, b=s0+(s1-s0)*(i+1)/n, l=runs[runs.length-1];
@@ -806,7 +817,7 @@ function setDoorHover(key){ if(doorHover===key) return; if(doorHover&&doorObjs[d
 // mur découpé en tranches de 5 cm dont le sommet suit le plafond
 function buildSlopedWall(w,H,CUT){
   const f=frame(w), h=w.ep/2, selW=isSel("mur",w.id);
-  const pick=c=>{ if(!selW) return wallMat(c,true); return new THREE.MeshStandardMaterial({color:lin(c),roughness:.9,map:plasterTex(),side:THREE.DoubleSide,emissive:new THREE.Color(SEL_EMISSIVE),emissiveIntensity:.35}); };
+  const pick=c=>{ if(!selW) return wallMat(c,true); return new THREE.MeshStandardMaterial({color:lin(baseCol(c)),roughness:.9,map:plasterTex(),side:THREE.DoubleSide,emissive:new THREE.Color(SEL_EMISSIVE),emissiveIntensity:.35}); };
   for(const P0 of pieces3d(w,H)) for(const r of colorRuns(w,P0.s0,P0.s1)){
     const p={s0:r.a,s1:r.b,z0:P0.z0,z1:P0.z1};
     const follow=p.z1>=H-1e-6, n=Math.max(1,Math.ceil((p.s1-p.s0)/0.05));
@@ -877,7 +888,7 @@ function build(){
       for(const r of colorRuns(w,p.s0,p.s1)){
         const c=ptAt(w,(r.a+r.b)/2), len=r.b-r.a;
         const g=worldUV(new THREE.BoxGeometry(len,z1-p.z0,w.ep));
-        const pick=c=>{ if(!selW) return wallMat(c); const m=new THREE.MeshStandardMaterial({color:lin(c),roughness:.9,map:plasterTex(),emissive:new THREE.Color(SEL_EMISSIVE),emissiveIntensity:.35}); return m; };
+        const pick=c=>{ if(!selW) return wallMat(c); const m=new THREE.MeshStandardMaterial({color:lin(baseCol(c)),roughness:.9,map:plasterTex(),emissive:new THREE.Color(SEL_EMISSIVE),emissiveIntensity:.35}); return m; };
         const end=pick(EXT_COLOR), top=(z1<H-0.001)?pick(CUT_COLOR):pick("#f1f0ec");
         const me=new THREE.Mesh(g,[end,end,top,end,pick(r.cN),pick(r.cS)]);
         me.position.set(c[0],(p.z0+z1)/2,c[1]); me.rotation.y=ang; me.castShadow=me.receiveShadow=true; me.userData.mur=w.id; group.add(me); wallMeshes.push(me);
