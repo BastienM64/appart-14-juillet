@@ -29,7 +29,10 @@ window.PROJET_FIGE = {
  },
  "retires": {
   "existant": [],
-  "projet": []
+  "projet": [
+   "c_cel_d",
+   "c_cel_bas"
+  ]
  },
  "meubles": {
   "existant": [],
@@ -76,7 +79,7 @@ window.PROJET_FIGE = {
     "t": "table4",
     "w": 1.2,
     "x": 3.25,
-    "y": 4.9
+    "y": 4.55
    },
    {
     "c": "#f2f1ec",
@@ -87,7 +90,7 @@ window.PROJET_FIGE = {
     "t": "chaise",
     "w": 0.45,
     "x": 2.95,
-    "y": 4.6
+    "y": 4.25
    },
    {
     "c": "#f2f1ec",
@@ -97,8 +100,8 @@ window.PROJET_FIGE = {
     "rot": 90,
     "t": "chaise",
     "w": 0.45,
-    "x": 3.6,
-    "y": 4.6
+    "x": 3.55,
+    "y": 4.25
    },
    {
     "c": "#f2f1ec",
@@ -108,8 +111,8 @@ window.PROJET_FIGE = {
     "rot": 90,
     "t": "chaise",
     "w": 0.45,
-    "x": 3.6,
-    "y": 5.2
+    "x": 3.55,
+    "y": 4.85
    },
    {
     "c": "#f2f1ec",
@@ -120,7 +123,7 @@ window.PROJET_FIGE = {
     "t": "chaise",
     "w": 0.45,
     "x": 2.95,
-    "y": 5.15
+    "y": 4.85
    },
    {
     "c": "#f2f1ec",
@@ -158,16 +161,60 @@ window.PROJET_FIGE = {
     "z": 0.5
    },
    {
-    "id": "mmv9jy0bk520",
-    "t": "secheserv",
-    "x": 1.55,
-    "y": 2.445,
-    "rot": 180,
-    "w": 0.5,
+    "c": "#f4f4f0",
     "d": 0.1,
     "h": 1.2,
-    "c": "#f4f4f0",
+    "id": "mmv9jy0bk520",
+    "rot": 180,
+    "t": "secheserv",
+    "w": 0.5,
+    "x": 1.55,
+    "y": 2.445,
     "z": 0.3
+   },
+   {
+    "id": "mmv9lv3uk206",
+    "t": "colonne",
+    "x": 1.95,
+    "y": 2.895,
+    "rot": 0,
+    "w": 0.55,
+    "d": 0.66,
+    "h": 1.5,
+    "c": "#d9dcdf"
+   },
+   {
+    "id": "mmv9lz6p3275",
+    "t": "lavelinge",
+    "x": 1.1,
+    "y": 2.75,
+    "rot": 0,
+    "w": 0.6,
+    "d": 0.6,
+    "h": 0.85,
+    "c": "#f2f1ec"
+   },
+   {
+    "id": "mmv9m0m8h783",
+    "t": "plan",
+    "x": 0.75,
+    "y": 2.815,
+    "rot": 0,
+    "w": 1.4,
+    "d": 0.5,
+    "h": 0.9,
+    "c": "#9aa88c"
+   },
+   {
+    "id": "mmv9m3aqp705",
+    "t": "plan",
+    "x": 0.315,
+    "y": 3.15,
+    "rot": 270,
+    "w": 1.2,
+    "d": 0.62,
+    "h": 0.9,
+    "c": "#9aa88c"
    }
   ]
  }
