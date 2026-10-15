@@ -13,11 +13,11 @@ window.PROJET_FIGE = {
     "sol": "chene-fonce"
    },
    "sas": {
-    "murs": "#ddd2bf",
+    "murs": "#f4f4f1",
     "sol": "carrelage-gris"
    },
    "sde": {
-    "murs": "#ddd2bf",
+    "murs": "#f4f4f1",
     "sol": "carrelage-gris"
    },
    "sejour": {
@@ -39,15 +39,15 @@ window.PROJET_FIGE = {
   "existant": [],
   "projet": [
    {
-    "c": "#2f6468",
+    "c": "#f2f1ec",
     "d": 0.62,
     "h": 1.8,
     "id": "mmv8hdaoa741",
-    "rot": 90,
+    "rot": 270,
     "t": "colonne",
     "w": 0.6,
-    "x": 2.145,
-    "y": 3.76
+    "x": 0.3,
+    "y": 5.935
    },
    {
     "c": "#d9cdb8",
@@ -113,7 +113,7 @@ window.PROJET_FIGE = {
     "t": "lit160",
     "w": 1.65,
     "x": 5.35,
-    "y": 4.515
+    "y": 4.5
    },
    {
     "c": "#8a6b55",
@@ -175,20 +175,20 @@ window.PROJET_FIGE = {
     "d": 0.35,
     "h": 1.8,
     "id": "mmv8ht0le25",
-    "rot": 180,
+    "rot": 90,
     "t": "etagere",
     "w": 0.8,
-    "x": 6.65,
-    "y": 6.07
+    "x": 6.87,
+    "y": 5.8
    },
    {
-    "c": "#6b4a33",
+    "c": "#8a6b55",
     "d": 0.46,
     "h": 0.85,
     "id": "mmv8htjsp84",
     "rot": 180,
     "t": "vasque",
-    "w": 0.8,
+    "w": 0.7,
     "x": -0.93,
     "y": 2.51
    },
@@ -251,15 +251,38 @@ window.PROJET_FIGE = {
     "z": 0.5
    },
    {
-    "c": "#2a2c31",
+    "c": "#9aa88c",
     "d": 0.6,
     "h": 2.15,
     "id": "mcuisine0415",
-    "rot": 180,
+    "rot": 90,
     "t": "cuisine4",
-    "w": 2.45,
-    "x": 1.225,
-    "y": 5.95
+    "w": 2.8,
+    "x": 2.15,
+    "y": 4.85
+   },
+   {
+    "c": "#f2f1ec",
+    "d": 0.1,
+    "h": 1.2,
+    "id": "mmv9co1zk438",
+    "rot": 90,
+    "t": "secheserv",
+    "w": 0.3,
+    "x": -0.615,
+    "y": 1.4,
+    "z": 0.3
+   },
+   {
+    "c": "#9aa88c",
+    "d": 0.62,
+    "h": 0.9,
+    "id": "mmv9ddalp964",
+    "rot": 270,
+    "t": "plan",
+    "w": 1,
+    "x": 0.315,
+    "y": 5.1
    }
   ]
  }

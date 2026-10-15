@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>Appartement 14 Juillet — projet de rénovation</title>
-<meta name="description" content="Maquette 3D et plan du projet de rénovation de l'appartement rue du 14 Juillet.">
+<meta name="description" content="Maquette 3D et plan du projet de rénovation de l'appartement du 1er étage, rue du 14 Juillet.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap">
 <style>
 /* Layout : outil de chantier — en-tête, maquette 3D ou plan au centre, panneaux dessous (mobile) ou à droite (desktop) */
@@ -131,6 +131,8 @@ textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;font:1
       <div class="sub" id="subtitle"></div>
     </div>
     <div class="row">
+      <a class="btn" id="siteNavPrev" hidden></a><a class="btn" id="siteNavNext" hidden></a>
+      <button class="btn primary" id="bPush" hidden title="Envoie l'état actuel du projet sur le site public">⇪ Sauvegarde</button>
       <button class="btn" id="bUndo" disabled title="Annuler la dernière action (Ctrl+Z)">↶ Retour</button>
       <div class="seg" id="variantSeg" role="group" aria-label="Variante"></div>
       <div class="seg" role="group" aria-label="Vue">
@@ -223,6 +225,7 @@ textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;font:1
 <script src="lib/postprocessing/RenderPass.js"></script>
 <script src="lib/postprocessing/ShaderPass.js"></script>
 <script src="lib/postprocessing/SSAOPass.js"></script>
+<script>window.SITE_NAV={next:{href:"2e-etage.html",label:"2e étage"}};</script>
 <script src="projet.js"></script>
 <script src="data.js"></script>
 <script>
@@ -350,7 +353,20 @@ function frame(w){ const dx=w.b[0]-w.a[0], dy=w.b[1]-w.a[1], L=Math.hypot(dx,dy)
 function ptAt(w,s){ const f=frame(w); return [w.a[0]+f.u[0]*s, w.a[1]+f.u[1]*s]; }
 const murs = ()=> V.murs.filter(w=>!isRetire(w.id));
 function ops(wid){ return V.ouvertures.filter(o=>o.mur===wid).sort((a,b)=>a.at-b.at); }
-function pieces3d(w,H){ const f=frame(w), r=[]; let s=0;
+function sInterval(w,f,o,g){ // portion de l'axe de w comprise dans l'emprise du mur o
+  let lo=0, hi=f.L; const ax=w.a[0]-o.a[0], ay=w.a[1]-o.a[1];
+  for(const [v0,k,a,b] of [[ax*g.n[0]+ay*g.n[1], f.u[0]*g.n[0]+f.u[1]*g.n[1], -o.ep/2, o.ep/2],[ax*g.u[0]+ay*g.u[1], f.u[0]*g.u[0]+f.u[1]*g.u[1], 0, g.L]]){
+    if(Math.abs(k)<1e-9){ if(!(v0>a+1e-6&&v0<b-1e-6)) return null; continue; }
+    let s1=(a-v0)/k, s2=(b-v0)/k; if(s1>s2) [s1,s2]=[s2,s1]; lo=Math.max(lo,s1); hi=Math.min(hi,s2); }
+  return hi-lo>1e-4?[lo,hi]:null; }
+function wallTrim(w){ const f=frame(w), list=murs(), iw=list.indexOf(w); let t0=0, t1=f.L;
+  for(const o of list){ if(o===w) continue; const g=frame(o), iv=sInterval(w,f,o,g); if(!iv) continue;
+    const atStart=iv[0]<=1e-6, atEnd=iv[1]>=f.L-1e-6; if(atStart===atEnd) continue;
+    const back=sInterval(o,g,w,f), mutual=back&&(back[0]<=1e-6||back[1]>=g.L-1e-6); if(mutual&&iw<list.indexOf(o)) continue;
+    if(atStart) t0=Math.max(t0,iv[1]); else t1=Math.min(t1,iv[0]); }
+  return [t0,t1]; }
+function pieces3d(w,H){ const tr=wallTrim(w); return pieces3dRaw(w,H).map(p=>({...p,s0:Math.max(p.s0,tr[0]),s1:Math.min(p.s1,tr[1])})).filter(p=>p.s1>p.s0+1e-4); }
+function pieces3dRaw(w,H){ const f=frame(w), r=[]; let s=0;
   for(const o of ops(w.id)){ if(o.at>s) r.push({s0:s,s1:o.at,z0:0,z1:H});
     const sill=o.allege||0, top=sill+o.h;
     if(sill>0) r.push({s0:o.at,s1:o.at+o.w,z0:0,z1:sill});
@@ -475,6 +491,9 @@ let group=new THREE.Group(); scene.add(group);
 let floors={}, wallMeshes=[], furnObjs={}, labels={}, cut=false;
 let sel=null; // {kind:'room'|'mur'|'meuble', id}
 const isSel=(k,id)=> sel && sel.kind===k && sel.id===id;
+const elKey=e=>e.groupe||e.id;
+function elStyle(e){ const o=(S.choix[vid]||{})["el:"+elKey(e)]||{}; return {c:o.c||e.couleur, plan:o.plan||e.plan}; }
+let elemObjs={};
 const matCache={};
 function lin(c){ return new THREE.Color(c).convertSRGBToLinear(); }
 // éclairage d'ambiance : une pièce claire virtuelle sert d'environnement (lumière douce et reflets réalistes)
@@ -576,7 +595,7 @@ function autoDos(e){ const c=[e.x+e.w/2,e.y+e.d/2], r0=roomAt(c), o=0.08, S={y0:
   for(const k of ["y0","y1","x0","x1"]){ const r=roomAt(S[k]); if(!r||r!==r0) return k; } return "y0"; }
 /* meubles : chaque forme est construite centrée, dos vers -z */
 function furnMesh(m){
-  const g=new THREE.Group(), w=m.w, d=m.d, h=m.h, x0=-w/2, x1=w/2, z0=-d/2, z1=d/2, kind=m.g||(CAT[m.t]||{}).g||"box", sel=isSel("meuble",m.id);
+  const g=new THREE.Group(), w=m.w, d=m.d, h=m.h, x0=-w/2, x1=w/2, z0=-d/2, z1=d/2, kind=m.g||(CAT[m.t]||{}).g||"box", sel=isSel("meuble",m.id)||(m.elKey&&isSel("elem",m.elKey));
   // meubles en bois : placage de noyer européen (Poly Haven), teinté selon la teinte choisie
   const WOODT={"#cfae84":"#fff4e6","#a7804f":"#e9d2b8","#6b4a33":"#a6876f","#8a6b55":"#ffffff"};
   const M=(c,r=.8)=>{ const wt=PH.ready&&WOODT[c.toLowerCase()];
@@ -832,7 +851,7 @@ function lowZoneMesh(){
 }
 function build(){
   scene.remove(group); group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); group=new THREE.Group(); scene.add(group);
-  floors={}; wallMeshes=[]; furnObjs={}; doorObjs={}; doorHover=null; labelsEl.innerHTML=""; labels={};
+  floors={}; wallMeshes=[]; furnObjs={}; elemObjs={}; doorObjs={}; doorHover=null; labelsEl.innerHTML=""; labels={};
   const H=V.hauteur, CUT=cut?1.10:H;
   for(const r of V.pieces){
     const sh=new THREE.Shape(r.poly.map(p=>new THREE.Vector2(p[0],-p[1])));
@@ -906,9 +925,9 @@ function build(){
       add(new THREE.Mesh(new THREE.BoxGeometry(.06,.1,.05),laiton)).position.set(cx-.09,e.z-.14,cz);
       add(new THREE.Mesh(new THREE.CylinderGeometry(.03,.025,.06,16),mat("#c4c7c9",{roughness:.4}))).position.set(cx-.09,e.z-.21,cz);
       continue; }
-    if(e.type==="cuisine_run"){ const k=e.dos||autoDos(e), along=(k==="y0"||k==="y1"), rot={y0:0,y1:180,x0:270,x1:90}[k];
-      const o=furnMesh({id:"_"+e.id,t:"_",g:"_run",x:e.x+e.w/2,y:e.y+e.d/2,z:e.z,w:along?e.w:e.d,d:along?e.d:e.w,h:e.h,rot,c:e.couleur,plan:e.plan,mods:e.modules});
-      o.traverse(c=>{ delete c.userData.meuble; }); group.add(o); continue; }
+    if(e.type==="cuisine_run"){ const k=e.dos||autoDos(e), along=(k==="y0"||k==="y1"), rot={y0:0,y1:180,x0:270,x1:90}[k], es=elStyle(e), ek=elKey(e);
+      const o=furnMesh({id:"_"+e.id,t:"_",g:"_run",x:e.x+e.w/2,y:e.y+e.d/2,z:e.z,w:along?e.w:e.d,d:along?e.d:e.w,h:e.h,rot,c:es.c,plan:es.plan,mods:e.modules,elKey:ek});
+      o.traverse(c=>{ delete c.userData.meuble; c.userData.elem=ek; }); group.add(o); (elemObjs[ek]=elemObjs[ek]||[]).push(o); continue; }
     if(e.type==="dressing"||e.type==="cuisine4"){ const k=e.dos||autoDos(e), along=(k==="y0"||k==="y1"), rot={y0:0,y1:180,x0:270,x1:90}[k];
       const o=furnMesh({id:"_"+e.id,t:"_",g:e.type==="dressing"?"_dressing":"cuisine",x:e.x+e.w/2,y:e.y+e.d/2,z:e.z,w:along?e.w:e.d,d:along?e.d:e.w,h:e.type==="dressing"?Math.min(e.h,CUT):e.h,rot,c:e.couleur});
       o.traverse(c=>{ delete c.userData.meuble; }); group.add(o);
@@ -1138,6 +1157,8 @@ window.addEventListener("pointerup",e=>{
   const tap=Math.hypot(e.clientX-down[0],e.clientY-down[1])<=6; down=null; if(!tap) return;
   setRay(e);
   const mid=hitMeuble(); if(mid){ select("meuble",mid,false); return; }
+  { const eh=ray.intersectObjects(Object.values(elemObjs).flat(),true)[0], wh2=ray.intersectObjects(wallMeshes)[0];
+    if(eh && (!wh2 || eh.distance<wh2.distance)){ select("elem",eh.object.userData.elem,false); return; } }
   const dh=ray.intersectObjects(Object.values(doorObjs).map(d=>d.pivot),true)[0], wh=ray.intersectObjects(wallMeshes)[0];
   if(dh && (!wh || dh.distance<wh.distance)){ toggleDoor(dh.object.userData.porte); return; }
   const hit=ray.intersectObjects([...wallMeshes,...Object.values(floors)])[0];
@@ -1300,6 +1321,24 @@ function renderDetail(){
   if(sel.kind==="room") return roomDetail(el);
   if(sel.kind==="mur") return wallDetail(el);
   if(sel.kind==="meuble") return furnDetail(el);
+  if(sel.kind==="elem") return elemDetail(el);
+}
+const PLANS_TRAVAIL=[["Quartz blanc","#eceae4"],["Gris béton","#b9b7b1"],["Beige","#cfccc4"],["Chêne","#a7804f"],["Noyer","#6b4a33"],["Anthracite","#3a3d40"],["Noir","#1e1f21"]];
+function elemDetail(el){
+  const es=V.elements.filter(e=>elKey(e)===sel.id); if(!es.length){ sel=null; return renderDetail(); }
+  const e=es[0], st=elStyle(e), L=locked(), nom=e.groupe==="cuisine"?"Cuisine":e.nom, tname=(TEINTES.find(t=>t[1]===st.c)||["Teinte perso"])[0];
+  el.innerHTML=`<h2>Équipement</h2><p class="detail-title">${nom}</p>
+   <div class="facts"><span>${es.length>1?es.length+" éléments":"1 élément"}</span><span>${roomName(e.x+e.w/2,e.y+e.d/2)}</span></div>${lockNote()}
+   ${L?"":`<div class="lab">Façades</div><div class="sws">${TEINTES.map(([n,c])=>`<button class="sw" data-c="${c}" title="${n}" aria-label="${n}" aria-pressed="${c===st.c}" style="background:${c}"></button>`).join("")}</div>
+   <div class="row"><span class="swname">${tname}</span><label class="swname" for="elColor">· autre :</label><input type="color" id="elColor" value="${st.c}"></div>
+   ${st.plan?`<div class="lab">Plan de travail</div><div class="sws">${PLANS_TRAVAIL.map(([n,c])=>`<button class="sw" data-p="${c}" title="${n}" aria-label="${n}" aria-pressed="${c===st.plan}" style="background:${c}"></button>`).join("")}</div>`:""}
+   <div class="row"><button class="btn" id="bElReset">Revenir à l'existant</button></div>`}`;
+  if(L) return;
+  const setEl=(k,v)=>{ S.choix[vid]=S.choix[vid]||{}; const key="el:"+sel.id; S.choix[vid][key]=Object.assign({},S.choix[vid][key],{[k]:v}); save(); refresh(); };
+  el.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>setEl("c",b.dataset.c));
+  el.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>setEl("plan",b.dataset.p));
+  $("elColor").onchange=ev=>setEl("c",ev.target.value);
+  $("bElReset").onclick=()=>{ if(S.choix[vid]) delete S.choix[vid]["el:"+sel.id]; save(); refresh(); };
 }
 function roomDetail(el){
   const r=V.pieces.find(p=>p.id===sel.id), st=style(r), bb=bbox(r.poly), pname=(PEINTURES.find(p=>p[1]===st.murs)||["Couleur actuelle"])[0], L=locked();
@@ -1417,6 +1456,17 @@ function select(kind,id,fly){
 
 function setMode(m){ if(m==="plan") exitWalk(); mode=m; $("tab3d").setAttribute("aria-pressed",m==="3d"); $("tabPlan").setAttribute("aria-pressed",m==="plan");
   planEl.hidden=m!=="plan"; $("tools3d").hidden=m!=="3d"; $("hint").hidden=m!=="3d"; labelsEl.hidden=m!=="3d"; if(m==="plan") renderPlan(); }
+// navigation entre appartements (site public)
+if(window.SITE_NAV){ for(const [k,id,fmtL] of [["prev","siteNavPrev",l=>"← "+l],["next","siteNavNext",l=>l+" →"]]){ const n=window.SITE_NAV[k]; if(!n) continue; const a=$(id); a.href=n.href; a.textContent=fmtL(n.label); a.hidden=false; } }
+// Sauvegarde : met à jour le site public avec l'état du projet (tâche planifiée « Mise à jour du site 14 Juillet »)
+const PUSH_TASK="trig_0131BnMsb53wqaf8Q17hspym";
+if(!READONLY && window.claude && window.claude.use) window.claude.use("mcp").then(mcp=>{ if(!mcp) return; const b=$("bPush"); b.hidden=false; let busy=false;
+  b.onclick=async()=>{ if(busy) return; busy=true; b.disabled=true; b.textContent="Envoi…";
+    const etat={v:2,choix:S.choix,retires:S.retires,meubles:S.meubles};
+    try{ await mcp.callTool("Claude Code Remote","fire_trigger",{trigger_id:PUSH_TASK,text:JSON.stringify({apt:D.cle==="14juillet-2e"?"2e":"1er",etat})},{cache:false});
+      b.textContent="✓ Envoyé — site à jour d'ici quelques minutes"; }
+    catch(err){ const c=err&&err.code; b.textContent= c==="server_not_connected"?"Connecteur Claude Code Remote absent":c==="needs_reauth"?"Reconnecte Claude Code Remote":c==="approval_required"||c==="not_in_manifest"?"Autorisation refusée":"Échec de l'envoi — réessaie"; }
+    setTimeout(()=>{ b.textContent="⇪ Sauvegarde"; b.disabled=false; busy=false; },6000); }; }).catch(()=>{});
 $("tab3d").onclick=()=>setMode("3d"); $("tabPlan").onclick=()=>setMode("plan");
 $("bCut").onclick=()=>{ cut=!cut; $("bCut").setAttribute("aria-pressed",cut); build(); };
 $("bLow").hidden=!Object.values(D.variantes).some(v=>v.combles); $("bLow").onclick=()=>{ showLow=!showLow; $("bLow").setAttribute("aria-pressed",showLow); build(); };

@@ -3,11 +3,12 @@
 Site statique (aucun serveur) : maquette 3D, plan coté, visite à hauteur d'homme
 et programme de travaux, figés sur l'état du projet.
 
-- `index.html` : la page
-- `data.js` : géométrie de l'appartement (existant + projet)
-- `projet.js` : choix figés (meubles, murs retirés, sols, peintures)
+- `index.html` / `data.js` / `projet.js` : appartement du 1er étage
+- `2e-etage.html` / `data-2e.js` / `projet-2e.js` : appartement du 2e étage (combles)
+- une flèche en haut de page permet de passer d'un appartement à l'autre
 
-Pour mettre à jour le site, remplacer `projet.js` (et `data.js` si la structure change).
+Mise à jour : le bouton « Sauvegarde » des maquettes de travail lance la tâche planifiée
+« Mise à jour du site 14 Juillet », qui réécrit `projet.js` ou `projet-2e.js` et pousse sur `main`.
 
 ## Ressources tierces
 - Three.js r128 (MIT) et ses modules d'exemple (`lib/`).
