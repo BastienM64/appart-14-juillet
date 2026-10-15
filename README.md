@@ -13,3 +13,4 @@ Pour mettre à jour le site, remplacer `projet.js` (et `data.js` si la structure
 - Three.js r128 (MIT) et ses modules d'exemple (`lib/`).
 - Texture de parquet « hardwood2 » issue des exemples Three.js (`tex/parquet_*.jpg`).
 - HDRI « Royal Esplanade » de Poly Haven, licence CC0 (`tex/env.js`, encodé en base64).
+- Matières Poly Haven « Walnut Veneer 02 » et « White Stucco », licence CC0 (`tex/noyer_*`, `tex/stuc_*`), réduites en 1K.
