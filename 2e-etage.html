@@ -225,6 +225,9 @@ textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;font:1
 <script src="lib/postprocessing/RenderPass.js"></script>
 <script src="lib/postprocessing/ShaderPass.js"></script>
 <script src="lib/postprocessing/SSAOPass.js"></script>
+<script src="lib/shaders/LuminosityHighPassShader.js"></script>
+<script src="lib/postprocessing/UnrealBloomPass.js"></script>
+<script src="lib/lights/RectAreaLightUniformsLib.js"></script>
 <script>window.SITE_NAV={prev:{href:"index.html",label:"1er étage"}};</script>
 <script src="projet-2e.js"></script>
 <script src="data-2e.js"></script>
@@ -565,6 +568,13 @@ function addWindow(w,o,CUT){
     if(z0>0.05){ const me=new THREE.Mesh(new THREE.BoxGeometry(o.w+0.1,0.03,w.ep/2+0.035),mat("#f2f0ea",{roughness:.35})); me.position.set(q[0]+f.n[0]*(w.ep/4+0.04)*k,z0-0.013,q[1]+f.n[1]*(w.ep/4+0.04)*k); me.rotation.y=ang; me.receiveShadow=me.castShadow=true; group.add(me); } }
 }
 // plafonniers et lumière chaude dans chaque pièce (visite)
+let rectInit=false;
+function addWindowLights(){ if(!THREE.RectAreaLight||!THREE.RectAreaLightUniformsLib) return; if(!rectInit){ try{ THREE.RectAreaLightUniformsLib.init(); rectInit=true; }catch(e){ return; } }
+  for(const o of V.ouvertures){ if(o.type!=="fenetre"||isRetire(o.mur)) continue; const w=V.murs.find(m=>m.id===o.mur); if(!w) continue;
+    const f=frame(w), q=ptAt(w,o.at+o.w/2), z0=o.allege||0, hh=Math.max(.3,Math.min(o.h,V.hauteur-z0));
+    for(const k of [1,-1]){ const off=w.ep/2+0.03; if(!roomAt([q[0]+f.n[0]*(off+0.15)*k,q[1]+f.n[1]*(off+0.15)*k])) continue;
+      const px=q[0]+f.n[0]*off*k, py=q[1]+f.n[1]*off*k, L=new THREE.RectAreaLight(0xfff0dc,3.2,o.w*0.92,hh*0.92);
+      L.position.set(px,z0+hh/2,py); L.lookAt(px+f.n[0]*k,z0+hh/2-0.25,py+f.n[1]*k); group.add(L); } } }
 function addCeilingLights(){
   for(const r of V.pieces){ if(area(r.poly)<1.2) continue; let c=centroid(r.poly);
     // sous un rampant : on cherche le point de plafond plat le plus proche du centre, sinon la lampe épouse la pente
@@ -575,7 +585,7 @@ function addCeilingLights(){
     const h=hAt(c[0],c[1]), e=.05, nx=(hAt(c[0]-e,c[1])-hAt(c[0]+e,c[1]))/(2*e), nz=(hAt(c[0],c[1]-e)-hAt(c[0],c[1]+e))/(2*e);
     const lamp=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.18,0.05,24),new THREE.MeshStandardMaterial({color:0xffffff,emissive:new THREE.Color(0xfff1d6),emissiveIntensity:.9,roughness:.4}));
     lamp.position.set(c[0],h-0.03,c[1]); lamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(-nx,1,-nz).normalize()); group.add(lamp);
-    const L=new THREE.PointLight(0xffe6c4,0.32,Math.max(4,Math.sqrt(area(r.poly))*2.6),2); L.position.set(c[0],h-0.25,c[1]); group.add(L); }
+    const L=new THREE.PointLight(0xffd3a0,0.4,Math.max(4,Math.sqrt(area(r.poly))*2.6),2); L.position.set(c[0],h-0.25,c[1]); group.add(L); }
 }
 (function(){ const sc=document.createElement("script"); sc.src="tex/env.js"; sc.async=true;
   sc.onload=()=>{ try{ if(!THREE.RGBELoader||!window.ENV_HDR_B64) return; const bin=atob(window.ENV_HDR_B64), buf=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i);
@@ -905,7 +915,7 @@ function build(){ fitDoors();
       }
     }
   }
-  addSkirting(H); if(walk) addCeilingLights();
+  addSkirting(H); if(walk){ addCeilingLights(); addWindowLights(); }
   for(const o of V.ouvertures){
     if(isRetire(o.mur)) continue;
     const w=V.murs.find(m=>m.id===o.mur); if(!w) continue; const f=frame(w), ang=-Math.atan2(f.u[1],f.u[0]);
@@ -915,7 +925,7 @@ function build(){ fitDoors();
       const v=[f.n[0]*o.sens,f.n[1]*o.sens], tip=[hinge[0]+v[0]*o.w,hinge[1]+v[1]*o.w];
       const hh=Math.min(o.h,CUT);
       const a0=Math.atan2(other[1]-hinge[1],other[0]-hinge[0]), a1=Math.atan2(v[1],v[0]); let da=a1-a0; while(da>Math.PI) da-=2*Math.PI; while(da<-Math.PI) da+=2*Math.PI;
-      const key=vid+":"+o.id; if(doorTarget[key]===undefined){ doorTarget[key]=1; doorCur[key]=1; }
+      const key=vid+":"+o.id; if(doorTarget[key]===undefined){ doorTarget[key]=doorCur[key]=o.fermee?0:1; }
       const pivot=new THREE.Group(); pivot.position.set(hinge[0],0,hinge[1]);
       const leafMat=new THREE.MeshStandardMaterial({color:lin("#f5f3ec"),roughness:.5});
       const leaf=new THREE.Mesh(new THREE.BoxGeometry(o.w-0.01,hh-0.01,0.04),leafMat); leaf.position.set(o.w/2,hh/2,0); leaf.castShadow=leaf.receiveShadow=true; pivot.add(leaf);
@@ -1004,7 +1014,7 @@ function enterWalk(){
   controls.enabled=false; camera.fov=78; camera.near=0.05; camera.far=25; camera.updateProjectionMatrix(); updHQ();
   stage.classList.add("full"); document.body.style.overflow="hidden";
   try{ const rq=stage.requestFullscreen||stage.webkitRequestFullscreen; if(rq){ const r=rq.call(stage,{navigationUI:"hide"}); if(r&&r.catch) r.catch(()=>{}); } }catch(e){}
-  setSceneBg(); build(); const p=nearestFree(walk.x,walk.y); walk.x=p[0]; walk.y=p[1];
+  setSceneBg(); applyLook(); build(); const p=nearestFree(walk.x,walk.y); walk.x=p[0]; walk.y=p[1];
   $("walkHud").hidden=false; $("tools3d").hidden=true; $("hint").hidden=true; labelsEl.hidden=true;
   $("walkHelp").textContent = matchMedia("(pointer:fine)").matches ? "Z Q S D pour marcher · clic maintenu pour regarder · E (ou clic) pour ouvrir / fermer une porte · M pour masquer les meubles" : "Joystick pour marcher · glisser pour regarder · toucher une porte pour l'ouvrir ou la fermer";
 }
@@ -1014,7 +1024,7 @@ function exitWalk(){
   try{ const fe=document.fullscreenElement||document.webkitFullscreenElement; if(fe){ const ex=document.exitFullscreen||document.webkitExitFullscreen; const r=ex&&ex.call(document); if(r&&r.catch) r.catch(()=>{}); } }catch(e){}
   camera.fov=40; camera.far=200; camera.updateProjectionMatrix(); camera.up.set(0,1,0);
   if(orbitSave){ camera.position.copy(orbitSave.p); controls.target.copy(orbitSave.t); }
-  controls.enabled=true; setSceneBg(); build();
+  controls.enabled=true; setSceneBg(); applyLook(); build();
   $("walkHud").hidden=true; $("tools3d").hidden=false; $("hint").hidden=false; labelsEl.hidden=false; $("measure").textContent="";
 }
 let carry=null;
@@ -1116,20 +1126,31 @@ window.addEventListener("blur",()=>{ keys={}; });
 /* ---------- caméra ---------- */
 let anim=null;
 function flyTo(target,pos){ anim={t:0,ft:controls.target.clone(),fp:camera.position.clone(),tt:target,tp:pos}; }
+function applyLook(){ const w=!!walk, c=center();
+  renderer.toneMappingExposure=w?1.02:0.9;
+  hemi.color.set(w?0xd3dff0:0xffffff); hemi.groundColor.set(w?0x9c8a74:0x8a8378); hemi.intensity=w?0.26:0.32;
+  sun.color.set(w?0xffdcb4:0xfff3e2); sun.intensity=w?2.1:1.15;
+  if(w){ sun.position.set(c.x+9,5.2,c.z+3.5); sun.target.position.copy(c); } else { sun.position.set(12,14,4); sun.target.position.set(0,0,0); }
+  Object.assign(sun.shadow.camera,w?{left:-6,right:6,top:6,bottom:-6,near:1,far:30}:{left:-8,right:8,top:8,bottom:-8,near:1,far:40}); sun.shadow.camera.updateProjectionMatrix(); sun.shadow.bias=w?-0.0004:-0.0006; }
 function center(){ const b=bounds(); return new THREE.Vector3((b.x0+b.x1)/2,0,(b.y0+b.y1)/2); }
 function viewAll(){ const c=center(); flyTo(c,new THREE.Vector3(c.x-3.5,10.5,c.z+9.5)); }
 function viewTop(){ const c=center(); flyTo(c,new THREE.Vector3(c.x,15,c.z+0.01)); }
 function focusRoom(id){ const r=V.pieces.find(p=>p.id===id); const c=centroid(r.poly), bb=bbox(r.poly), s=Math.max(bb.x1-bb.x0,bb.y1-bb.y0);
   const t=new THREE.Vector3(c[0],0.4,c[1]); flyTo(t,new THREE.Vector3(c[0]-s*0.55,2.2+s*1.25,c[1]+s*1.15)); }
 
-let composer=null, ssao=null, fxaa=null, hq=matchMedia("(pointer:fine)").matches;
+let composer=null, ssao=null, fxaa=null, bloom=null, hq=matchMedia("(pointer:fine)").matches;
 function getComposer(){
   if(composer) return composer; if(!THREE.EffectComposer||!THREE.SSAOPass||!THREE.ShaderPass||!THREE.FXAAShader||!THREE.GammaCorrectionShader) return null;
   try{ const w=stage.clientWidth,h=stage.clientHeight; composer=new THREE.EffectComposer(renderer);
     ssao=new THREE.SSAOPass(scene,camera,w,h); ssao.kernelRadius=0.45; ssao.minDistance=0.0006; ssao.maxDistance=0.02; composer.addPass(ssao);
-    fxaa=new THREE.ShaderPass(THREE.FXAAShader); composer.addPass(fxaa); composer.addPass(new THREE.ShaderPass(THREE.GammaCorrectionShader)); sizeComposer(); return composer; }
+    if(THREE.UnrealBloomPass){ bloom=new THREE.UnrealBloomPass(new THREE.Vector2(w,h),0.22,0.6,0.9); composer.addPass(bloom); }
+    composer.addPass(new THREE.ShaderPass(THREE.GammaCorrectionShader));
+    composer.addPass(new THREE.ShaderPass({uniforms:{tDiffuse:{value:null},warm:{value:0.55},vig:{value:0.3}},
+      vertexShader:"varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }",
+      fragmentShader:"uniform sampler2D tDiffuse; uniform float warm,vig; varying vec2 vUv; void main(){ vec4 c=texture2D(tDiffuse,vUv); vec3 col=c.rgb*vec3(1.0+0.04*warm,1.0+0.01*warm,1.0-0.05*warm); float l=dot(col,vec3(0.2126,0.7152,0.0722)); col=mix(vec3(l),col,1.05); col=(col-0.5)*1.04+0.5; vec2 d=vUv-0.5; col*=1.0-vig*dot(d,d)*1.5; gl_FragColor=vec4(clamp(col,0.0,1.0),c.a); }"}));
+    fxaa=new THREE.ShaderPass(THREE.FXAAShader); composer.addPass(fxaa); sizeComposer(); return composer; }
   catch(e){ composer=null; return null; } }
-function sizeComposer(){ if(!composer) return; const w=stage.clientWidth,h=stage.clientHeight, pr=renderer.getPixelRatio(); composer.setSize(w,h); if(ssao) ssao.setSize(w*pr,h*pr); if(fxaa) fxaa.material.uniforms.resolution.value.set(1/(w*pr),1/(h*pr)); }
+function sizeComposer(){ if(!composer) return; const w=stage.clientWidth,h=stage.clientHeight, pr=renderer.getPixelRatio(); composer.setSize(w,h); if(ssao) ssao.setSize(w*pr,h*pr); if(bloom) bloom.setSize(w*pr,h*pr); if(fxaa) fxaa.material.uniforms.resolution.value.set(1/(w*pr),1/(h*pr)); }
 function resize(){ const w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); sizeComposer(); }
 new ResizeObserver(resize).observe(stage);
 const tmp=new THREE.Vector3();
@@ -1156,7 +1177,7 @@ function loop(){
     for(const id in labels){ const L=labels[id]; tmp.copy(L.pos).project(camera); const vis=tmp.z<1;
       L.el.style.display=vis?"":"none"; L.el.style.left=((tmp.x+1)/2*w)+"px"; L.el.style.top=((1-tmp.y)/2*h)+"px"; } }
 }
-function setSceneBg(){ if(walk){ scene.background=lin("#cfe2f1"); return; } const v=getComputedStyle(document.documentElement).getPropertyValue("--scene").trim()||"#dfe3dd"; scene.background=lin(v); }
+function setSceneBg(){ if(walk){ scene.background=lin("#e6eef6"); return; } const v=getComputedStyle(document.documentElement).getPropertyValue("--scene").trim()||"#dfe3dd"; scene.background=lin(v); }
 setSceneBg(); try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{setSceneBg();renderPlan();}); }catch(e){}
 new MutationObserver(()=>{setSceneBg();renderPlan();}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 
