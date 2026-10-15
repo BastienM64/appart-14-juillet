@@ -566,9 +566,15 @@ function addWindow(w,o,CUT){
 }
 // plafonniers et lumière chaude dans chaque pièce (visite)
 function addCeilingLights(){
-  for(const r of V.pieces){ if(area(r.poly)<1.2) continue; const c=centroid(r.poly), h=hAt(c[0],c[1]);
+  for(const r of V.pieces){ if(area(r.poly)<1.2) continue; let c=centroid(r.poly);
+    // sous un rampant : on cherche le point de plafond plat le plus proche du centre, sinon la lampe épouse la pente
+    if(V.combles && hAt(c[0],c[1])<V.hauteur-1e-3){ const bb=bbox(r.poly); let best=null, bd=1e9;
+      for(let x=bb.x0+.25;x<=bb.x1-.25;x+=.05) for(let y=bb.y0+.25;y<=bb.y1-.25;y+=.05){ if(!inPoly([x,y],r.poly)) continue;
+        if([[0,0],[.2,0],[-.2,0],[0,.2],[0,-.2]].every(([dx,dy])=>hAt(x+dx,y+dy)>=V.hauteur-1e-3)){ const dd=Math.hypot(x-c[0],y-c[1]); if(dd<bd){ bd=dd; best=[x,y]; } } }
+      if(best) c=best; }
+    const h=hAt(c[0],c[1]), e=.05, nx=(hAt(c[0]-e,c[1])-hAt(c[0]+e,c[1]))/(2*e), nz=(hAt(c[0],c[1]-e)-hAt(c[0],c[1]+e))/(2*e);
     const lamp=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.18,0.05,24),new THREE.MeshStandardMaterial({color:0xffffff,emissive:new THREE.Color(0xfff1d6),emissiveIntensity:.9,roughness:.4}));
-    lamp.position.set(c[0],h-0.03,c[1]); group.add(lamp);
+    lamp.position.set(c[0],h-0.03,c[1]); lamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(-nx,1,-nz).normalize()); group.add(lamp);
     const L=new THREE.PointLight(0xffe6c4,0.32,Math.max(4,Math.sqrt(area(r.poly))*2.6),2); L.position.set(c[0],h-0.25,c[1]); group.add(L); }
 }
 (function(){ const sc=document.createElement("script"); sc.src="tex/env.js"; sc.async=true;
@@ -861,7 +867,10 @@ function lowZoneMesh(){
   const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));
   const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0x4f8a3c,transparent:true,opacity:.28,depthWrite:false})); m.renderOrder=2; return m;
 }
-function build(){
+function fitDoors(){ for(const o of V.ouvertures){ if(o.type!=="porte") continue; if(o.h0===undefined) o.h0=o.h; o.h=o.h0;
+    if(!V.combles) continue; const w=V.murs.find(m=>m.id===o.mur); if(!w) continue; let mn=1e9; for(let k=0;k<=8;k++){ const q=ptAt(w,o.at+o.w*k/8); mn=Math.min(mn,hAt(q[0],q[1])); }
+    o.h=Math.min(o.h0,+(mn-.06).toFixed(2)); } }
+function build(){ fitDoors();
   scene.remove(group); group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); group=new THREE.Group(); scene.add(group);
   floors={}; wallMeshes=[]; furnObjs={}; elemObjs={}; doorObjs={}; doorHover=null; labelsEl.innerHTML=""; labels={};
   const H=V.hauteur, CUT=cut?1.10:H;
