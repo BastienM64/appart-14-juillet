@@ -309,6 +309,9 @@ const CATALOGUE = [
     {t:"vasque",    nom:"Meuble vasque",        w:0.80,d:0.46,h:0.85,c:"#f2f1ec", g:"plan"},
     {t:"douche",    nom:"Douche à l'italienne", w:0.90,d:1.20,h:0.02,c:"#e9e8e3", g:"tapis"},
     {t:"lavelinge", nom:"Lave-linge",           w:0.60,d:0.60,h:0.85,c:"#f2f1ec", g:"box"},
+    {t:"paroi",     nom:"Paroi de douche vitrée", w:0.90,d:0.06,h:2.00,c:"#2b2d30", g:"paroi"},
+    {t:"paroi2",    nom:"Porte de douche coulissante", w:1.20,d:0.08,h:2.00,c:"#c9ccce", g:"paroicoul"},
+    {t:"rideau",    nom:"Rideau de douche",     w:0.90,d:0.10,h:2.00,c:"#f2f1ec", g:"rideau"},
     {t:"secheserv", nom:"Sèche-serviettes",     w:0.50,d:0.10,h:1.20,z:0.30,c:"#f4f4f0", g:"secheserv", mural:true}
   ]}
 ];
@@ -325,7 +328,14 @@ else try{ const old=JSON.parse(localStorage.getItem("appart14-choix-v1")); if(ol
 const meubles = ()=> (S.meubles[vid] = S.meubles[vid] || []);
 const retires = ()=> (S.retires[vid] = S.retires[vid] || []);
 const isRetire = id => retires().includes(id);
-function style(r){ const o=(S.choix[vid]||{})[r.id]||{}; return {sol:o.sol||r.sol, murs:o.murs||r.murs}; }
+function style(r,dd=0){ const o=(S.choix[vid]||{})[r.id]||{}; let sol=o.sol||r.sol;
+  if(!o.sol && dd<2){ const f=fusedWith(r); if(f) sol=style(f,dd+1).sol; } return {sol, murs:o.murs||r.murs}; }
+// une pièce dont une cloison a été retirée, ouverte sur une pièce plus grande, en reprend le sol
+function fusedWith(r){ const rs=(S.retires||{})[vid]||[]; if(!rs.length) return null; let best=null;
+  for(const id of rs){ const w=V.murs.find(m=>m.id===id); if(!w) continue; const f=frame(w), c=ptAt(w,f.L/2), off=w.ep/2+0.05;
+    const A=roomAt([c[0]+f.n[0]*off,c[1]+f.n[1]*off]), B=roomAt([c[0]-f.n[0]*off,c[1]-f.n[1]*off]); if(!A||!B||A===B) continue;
+    const o=A===r?B:(B===r?A:null); if(o && area(o.poly)>area(r.poly) && (!best||area(o.poly)>area(best.poly))) best=o; }
+  return best; }
 function setChoix(rid,key,val){ S.choix[vid]=S.choix[vid]||{}; S.choix[vid][rid]=S.choix[vid][rid]||{}; S.choix[vid][rid][key]=val; save(); }
 
 let db=null, docRef=null, saveTimer=null, lastSaved="";
@@ -589,7 +599,7 @@ function addCeilingLights(){
       if(best) c=best; }
     const h=hAt(c[0],c[1]), e=.05, nx=(hAt(c[0]-e,c[1])-hAt(c[0]+e,c[1]))/(2*e), nz=(hAt(c[0],c[1]-e)-hAt(c[0],c[1]+e))/(2*e);
     const lamp=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.18,0.05,24),new THREE.MeshStandardMaterial({color:0xffffff,emissive:new THREE.Color(0xfff1d6),emissiveIntensity:.9,roughness:.4}));
-    lamp.position.set(c[0],h-0.03,c[1]); lamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(-nx,1,-nz).normalize()); group.add(lamp);
+    lamp.position.set(c[0],h-0.03,c[1]); lamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(nx,1,nz).normalize()); group.add(lamp);
     if(qual===0) continue; const L=new THREE.PointLight(0xffd3a0,0.4,Math.max(4,Math.sqrt(area(r.poly))*2.6),2); L.position.set(c[0],h-0.25,c[1]); group.add(L); }
 }
 // environnements : extérieur (vue d'ensemble) et intérieur (visite, HDRI « Poly Haven Studio »)
@@ -733,7 +743,7 @@ function furnMesh(m){
       verre=new THREE.MeshStandardMaterial({color:lin("#0d0e10"),roughness:.08,metalness:.2,envMapIntensity:1.2}), zc=(z0+z1)/2;
     const toW=(lx,lz)=>{ const f=-(m.rot||0)*Math.PI/180; return [m.x+lx*Math.cos(f)+lz*Math.sin(f), m.y-lx*Math.sin(f)+lz*Math.cos(f)]; };
     B(x0+.01,x1-.01,z0+.03,z1-.06,0,.10,leg); B(x0,x1,z0,z1-.02,.10,bh-ct,carc); B(x0,x1,z0,z1+.02,bh-ct,bh,planM);
-    let a=x0; for(const [t,l] of (m.mods||[["porte",w]])){ const b=a+l, xm=(a+b)/2;
+    let a=x0; for(const [t,l,opt] of (m.mods||[["porte",w]])){ const b=a+l, xm=(a+b)/2;
       if(t==="tiroirs"){ const hh=(bh-ct-.10)/3; for(let k=0;k<3;k++) front(a,b,.10+k*hh,.10+(k+1)*hh,"h"); }
       else if(t==="fileur") B(a+.002,b-.002,z1-.018,z1,.10,bh-ct,body);
       else if(t==="plaque"){ const ot=bh-ct-.13; B(a+.003,b-.003,z1-.02,z1,.12,ot,M("#1c1d1f",.2)); B(a+.05,b-.05,z1,z1+.003,.2,ot-.07,new THREE.MeshStandardMaterial({color:lin("#08090a"),roughness:.05,envMapIntensity:1.3}));
@@ -747,10 +757,12 @@ function furnMesh(m){
           for(let i=0;i<P.count;i++){ const lz=z0+hd/2+P.getZ(i); P.setY(i,P.getY(i)>0?Math.max(bot+.05,Math.min(top,ceil(xm,lz)-.004)):bot); }
           geo.computeVertexNormals(); const hm=new THREE.Mesh(geo,inox); hm.position.set(xm,0,0); hm.castShadow=hm.receiveShadow=true; g.add(hm);
           B(xm-hw+.02,xm+hw-.02,z0+.03,z0+hd-.03,bot-.004,bot,inoxD); B(xm-.08,xm-.02,z0+hd,z0+hd+.004,bot+.015,bot+.03,new THREE.MeshBasicMaterial({color:0x8be08b})); } }
-      else if(t==="evier"){ front(a,xm,.10,bh-ct,"v"); front(xm,b,.10,bh-ct,"v2");
-        const hw=Math.min(.38,l/2-.03); B(xm-hw,xm+hw,zc-.23,zc+.21,bh,bh+.004,inox);
-        for(const ox of [-hw*.5,hw*.5]) B(xm+ox-hw*.42,xm+ox+hw*.42,zc-.19,zc+.15,bh-.17,bh+.0045,inoxD);
-        const tx=xm; B(tx-.018,tx+.018,z0+.03,z0+.066,bh,bh+.2,inox); B(tx-.013,tx+.013,z0+.03,z0+.2,bh+.18,bh+.205,inox); B(tx-.011,tx+.011,z0+.18,z0+.2,bh+.12,bh+.19,inox); }
+      else if(t==="evier"){ front(a,xm,.10,bh-ct,"v"); front(xm,b,.10,bh-ct,"v2"); const side=opt&&opt.robinet==="cote";
+        // robinet sur le côté (sous une fenêtre) : les vantaux s'ouvrent sans le toucher
+        const hw=Math.min(.38,l/2-.03)-(side?.06:0), sx=xm-(side?.05:0); B(sx-hw,sx+hw,zc-.23,zc+.21,bh,bh+.004,inox);
+        for(const ox of [-hw*.5,hw*.5]) B(sx+ox-hw*.42,sx+ox+hw*.42,zc-.19,zc+.15,bh-.17,bh+.0045,inoxD);
+        if(side){ const tx=b-.055, tz=z0+.40; C(.02,.022,.2,tx,bh+.1,tz,inox,0,0,16); B(tx-.17,tx,tz-.012,tz+.012,bh+.18,bh+.204,inox); B(tx-.17,tx-.15,tz-.011,tz+.011,bh+.12,bh+.19,inox); B(tx-.005,tx+.005,tz+.02,tz+.06,bh+.17,bh+.185,inox); }
+        else { const tx=xm; B(tx-.018,tx+.018,z0+.03,z0+.066,bh,bh+.2,inox); B(tx-.013,tx+.013,z0+.03,z0+.2,bh+.18,bh+.205,inox); B(tx-.011,tx+.011,z0+.18,z0+.2,bh+.12,bh+.19,inox); } }
       else front(a,b,.10,bh-ct,t==="angle"?"v2":"v");
       a=b; } }
   else if(kind==="_dressing"){ const alu=new THREE.MeshStandardMaterial({color:lin("#b9bcbf"),roughness:.3,metalness:.9}), inner=M(hexShade(m.c,-5),.85), fd=z1-.06, zm=(z0+fd)/2, full=!m.cut;
@@ -777,6 +789,14 @@ function furnMesh(m){
       const pg=new THREE.Group(), pm=M(m.c,.55); g.add(pg); addBox(pg,xa,xb,za-.018,za,.02,ph,pm); addBox(pg,hx,hx+.02,za-.021,za+.003,.02,ph,alu);
       addBox(pg,xa,xb,za-.021,za+.003,ph-.02,ph,alu); addBox(pg,xa,xb,za-.021,za+.003,.02,.04,alu); slides.push({mesh:pg,mat:pm,x:0,shift:sh}); }
     g.userData.slides=slides; }
+  else if(kind==="paroi"||kind==="paroicoul"){ const prof=new THREE.MeshStandardMaterial({color:lin(m.c),roughness:.3,metalness:.8}), zc=(z0+z1)/2;
+    if(kind==="paroi"){ B(x0+.012,x1,zc-.004,zc+.004,.02,h,glassM); B(x0,x0+.012,zc-.012,zc+.012,0,h,prof); B(x0+.012,x1,zc-.006,zc+.006,0,.02,prof);
+      C(.008,.008,.45,x1-.03,h-.06,zc-.225,prof,Math.PI/2,0,10); B(x1-.04,x1-.02,zc-.45,zc-.44,h-.075,h-.045,prof); }
+    else { const half=(w-.02)/2; B(x0,x1,z0,z1,h-.04,h,prof); B(x0,x1,z0,z1,0,.015,prof);
+      B(x0+.01,x0+.01+half+.04,zc-.025,zc-.017,.02,h-.045,glassM); B(x1-.01-half-.04,x1-.01,zc+.017,zc+.025,.02,h-.045,glassM);
+      B(x0,x0+.012,z0,z1,0,h,prof); B(x1-.012,x1,z0,z1,0,h,prof); B(x1-.01-half-.03,x1-.01-half-.018,zc+.025,zc+.045,h*.45,h*.6,chrome); } }
+  else if(kind==="rideau"){ const barH=h-.02; C(.011,.011,w,0,barH,0,chrome,0,Math.PI/2,12); for(const xs of [x0,x1]) C(.025,.025,.012,xs,barH,0,chrome,0,Math.PI/2,16);
+    const fab=fabric(m.c), n=Math.max(6,Math.round(w/0.07)), pw=w/n; for(let i=0;i<n;i++){ const xa=x0+i*pw, oz=(i%2?.022:-.022); B(xa,xa+pw+.004,oz-.004,oz+.004,.12,barH-.04,fab); C(.012,.012,.006,xa+pw/2,barH,0,chrome,Math.PI/2,0,10); } }
   else if(kind==="secheserv"){ const tb=M(m.c,.3), zt=z1-.035; for(const tx of [x0+.02,x1-.02]) C(.016,.016,h,tx,h/2,zt,tb,0,0,16);
     for(let y=.06;y<h-.03;y+=(y<h*.45?.055:.075)) C(.011,.011,w-.04,0,y,zt,tb,0,Math.PI/2,12);
     for(const y of [.12,h-.12]) for(const tx of [x0+.02,x1-.02]) B(tx-.012,tx+.012,z0,zt,y-.012,y+.012,chrome); C(.014,.014,.05,x1-.02,-.025,zt,chrome); }
@@ -1289,9 +1309,10 @@ function furnSymbol(m,ink,muted,pan,selC){
   if(kind==="cuisine"){ const mw=w/4, zf=Math.min(d,0.6)+z0; for(let i=1;i<4;i++) s+=L(x0+i*mw,z0,x0+i*mw,zf);
     s+=R(x0+mw*3.5-0.2,z0+0.12,0.32,0.34); for(const [ox,oz] of [[-.14,-.11],[.14,-.11],[-.14,.12],[.14,.12]]) s+=`<circle cx="${x0+mw*1.5+ox}" cy="${(z0+zf)/2+oz}" r="0.07" fill="none" stroke="${muted}" stroke-width="0.01"/>`;
     s+=`<rect x="${x0}" y="${z0}" width="${w}" height="${Math.min(.35,d)}" fill="none" stroke="${muted}" stroke-width="0.01" stroke-dasharray="0.05 0.04"/>`; }
+  if(kind==="paroi"||kind==="paroicoul"||kind==="rideau") s+=L(x0,z0+d/2,x0+w,z0+d/2);
   if(kind==="secheserv") s+=`<text x="0" y="0.035" text-anchor="middle" font-size="0.08" fill="${ink}">S-S</text>`;
   if(kind==="frigo") s+=`<text x="0" y="0.04" text-anchor="middle" font-size="0.1" fill="${ink}">Frigo</text>`;
-  if(kind!=="clim" && kind!=="tele" && kind!=="frigo" && kind!=="cuisine" && kind!=="secheserv" && w>=0.7 && d>=0.4) s+=`<text x="0" y="${Math.min(d/2-0.08,0.06)}" text-anchor="middle" font-size="0.12" fill="${ink}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>${label}</text>`;
+  if(kind!=="clim" && kind!=="tele" && kind!=="frigo" && kind!=="cuisine" && kind!=="secheserv" && kind!=="paroi" && kind!=="paroicoul" && kind!=="rideau" && w>=0.7 && d>=0.4) s+=`<text x="0" y="${Math.min(d/2-0.08,0.06)}" text-anchor="middle" font-size="0.12" fill="${ink}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>${label}</text>`;
   return s+"</g>";
 }
 function renderPlan(){

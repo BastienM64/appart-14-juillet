@@ -95,6 +95,8 @@ window.APPART = {
   // 15/10 — radiateurs déposés dans le projet
   P.elements = P.elements.filter(e => e.type !== "radiateur");
   // 15/10 — porte du cellier décalée vers la droite, là où le rampant laisse passer une porte de ~1,83 m
+  // 15/10 — évier centré sur la fenêtre de la cuisine (3,78–4,55 m), robinet sur le côté pour laisser s'ouvrir les vantaux
+  P.elements.find(e => e.id === "cuisine_g").modules = [["angle", 0.89], ["tiroirs", 0.80], ["evier", 0.77, { robinet: "cote" }], ["fileur", 0.06]];
   Object.assign(P.ouvertures.find(o => o.id === "p_cel"), { at: 1.53, sens: 1, fermee: true });   // ouvre côté séjour, fermée par défaut
   window.APPART.variantes.projet = P;
 })();
