@@ -190,7 +190,7 @@ window.PROJET_FIGE = {
     "t": "vasque",
     "w": 0.7,
     "x": -0.93,
-    "y": 2.51
+    "y": 2.46
    },
    {
     "c": "#f2f1ec",
