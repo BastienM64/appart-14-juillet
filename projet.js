@@ -61,7 +61,7 @@ window.PROJET_FIGE = {
     "y": 0.805
    },
    {
-    "c": "#3a3d40",
+    "c": "#8a6b55",
     "d": 0.4,
     "h": 0.5,
     "id": "mmv8hhmcs372",
@@ -69,10 +69,10 @@ window.PROJET_FIGE = {
     "t": "tv",
     "w": 1.6,
     "x": 5.3,
-    "y": 3.155
+    "y": 3.15
    },
    {
-    "c": "#6b4a33",
+    "c": "#8a6b55",
     "d": 0.55,
     "h": 0.4,
     "id": "mmv8hi5r2180",
@@ -83,7 +83,7 @@ window.PROJET_FIGE = {
     "y": 1.65
    },
    {
-    "c": "#6b4a33",
+    "c": "#8a6b55",
     "d": 0.4,
     "h": 0.5,
     "id": "mmv8hixrk95",
@@ -94,7 +94,7 @@ window.PROJET_FIGE = {
     "y": 3.665
    },
    {
-    "c": "#6b4a33",
+    "c": "#8a6b55",
     "d": 0.4,
     "h": 0.5,
     "id": "mmv8hj7fp200",
@@ -124,10 +124,10 @@ window.PROJET_FIGE = {
     "t": "armoire",
     "w": 1.2,
     "x": 3.5,
-    "y": 0.305
+    "y": 0.3
    },
    {
-    "c": "#3a3d40",
+    "c": "#f2f1ec",
     "d": 0.5,
     "h": 0.88,
     "id": "mmv8hl6oy929",
@@ -138,7 +138,7 @@ window.PROJET_FIGE = {
     "y": 1.7
    },
    {
-    "c": "#3a3d40",
+    "c": "#f2f1ec",
     "d": 0.5,
     "h": 0.88,
     "id": "mmv8hl91e689",
@@ -149,7 +149,7 @@ window.PROJET_FIGE = {
     "y": 1.7
    },
    {
-    "c": "#3a3d40",
+    "c": "#f2f1ec",
     "d": 0.5,
     "h": 0.88,
     "id": "mmv8hldlb423",
@@ -160,7 +160,7 @@ window.PROJET_FIGE = {
     "y": 2.3
    },
    {
-    "c": "#3a3d40",
+    "c": "#f2f1ec",
     "d": 0.5,
     "h": 0.88,
     "id": "mmv8hlkjw560",
@@ -171,7 +171,7 @@ window.PROJET_FIGE = {
     "y": 2.3
    },
    {
-    "c": "#6b4a33",
+    "c": "#8a6b55",
     "d": 0.35,
     "h": 1.8,
     "id": "mmv8ht0le25",
@@ -186,11 +186,11 @@ window.PROJET_FIGE = {
     "d": 0.46,
     "h": 0.85,
     "id": "mmv8htjsp84",
-    "rot": 0,
+    "rot": 180,
     "t": "vasque",
     "w": 0.8,
-    "x": -0.95,
-    "y": 2.5
+    "x": -0.93,
+    "y": 2.51
    },
    {
     "c": "#f2f1ec",
@@ -228,7 +228,7 @@ window.PROJET_FIGE = {
     "z": 1.95
    },
    {
-    "c": "#6b4a33",
+    "c": "#8a6b55",
     "d": 0.8,
     "h": 0.75,
     "id": "mmv8u69a2809",

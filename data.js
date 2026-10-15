@@ -71,11 +71,10 @@ window.APPART = {
         { id: "rad_ch1",   nom: "Radiateur chambre 1",    type: "radiateur", x: 6.95, y: 2.30, w: 0.10, d: 0.55, z: 0.15, h: 0.45, couleur: "#f4f4f0" },
         { id: "rad_ch2",   nom: "Radiateur chambre 2",    type: "radiateur", x: 6.95, y: 4.85, w: 0.10, d: 0.55, z: 0.15, h: 0.45, couleur: "#f4f4f0" },
         { id: "plac1",     nom: "Placard chambre 2",      type: "placard",   x: 2.53, y: 4.27, w: 0.82, d: 1.09, z: 0.00, h: 2.40, couleur: "#f0eee8" },
-        { id: "poutre",    nom: "Retombée de poutre",     type: "poutre",    x: 3.30, y: 3.46, w: 0.15, d: 2.79, z: 2.25, h: 0.15, couleur: "#f3f2ee" },
         { id: "douche",    nom: "Receveur de douche",     type: "sanitaire", x: -1.27, y: 0.03, w: 0.68, d: 1.02, z: 0.00, h: 0.15, couleur: "#f7f7f5" },
         { id: "lavabo",    nom: "Lavabo",                 type: "sanitaire", x: -1.18, y: 2.30, w: 0.50, d: 0.44, z: 0.80, h: 0.15, couleur: "#f7f7f5" },
         { id: "rad_sde",   nom: "Radiateur soufflant",    type: "radiateur", x: -0.66, y: 1.35, w: 0.10, d: 0.45, z: 1.40, h: 0.55, couleur: "#f4f4f0" },
-        { id: "ballon",    nom: "Ballon d'eau chaude",    type: "ballon",    x: -1.20, y: 2.84, w: 0.50, d: 0.50, z: 1.00, h: 1.20, couleur: "#f6f6f3" },
+        { id: "ballon",    nom: "Ballon d'eau chaude",    type: "ballon",    x: -1.20, y: 2.84, w: 0.50, d: 0.50, z: 1.20, h: 1.00, couleur: "#f6f6f3" },
         { id: "cuvette",   nom: "WC",                     type: "sanitaire", x: -1.13, y: 5.68, w: 0.40, d: 0.55, z: 0.00, h: 0.40, couleur: "#f7f7f5" }
       ]
     },
@@ -107,6 +106,9 @@ window.APPART = {
 
   // 15/10 — la cuisine devient un meuble du projet (déplaçable, couleur modifiable)
   P.elements = P.elements.filter(e => e.id !== "cuis_bas" && e.id !== "cuis_haut");
+
+  // 15/10 — le meuble vasque remplace l'ancien lavabo de la salle d'eau
+  P.elements = P.elements.filter(e => e.id !== "lavabo");
 
   // 14/10 — placard décalé au fond de la chambre, sur le même mur
   const pl = el("plac1"); pl.y = 6.25 - pl.d;
