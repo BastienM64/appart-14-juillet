@@ -463,33 +463,6 @@ const PH={ready:false};
 (function(){ const L=new THREE.TextureLoader(), list={nd:"tex/noyer_diff.jpg",nn:"tex/noyer_nor.jpg",nr:"tex/noyer_rough.jpg",sd:"tex/stuc_diff.jpg",sn:"tex/stuc_nor.jpg",sr:"tex/stuc_rough.jpg",cd:"tex/cuir_diff.jpg",cn:"tex/cuir_nor.jpg",cr:"tex/cuir_rough.jpg",fd:"tex/frigo_diff.jpg",fn:"tex/frigo_nor.jpg",fr:"tex/frigo_rough.jpg",ed:"tex/noyereu_diff.jpg",en:"tex/noyereu_nor.jpg",er:"tex/noyereu_rough.jpg",vd:"tex/velours_diff.jpg",vn:"tex/velours_nor.jpg",vr:"tex/velours_rough.jpg"}; let n=0, N=Object.keys(list).length;
   for(const k in list) L.load(list[k],t=>{ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=8; if(k==="nd"||k==="sd"||k==="cd"||k==="fd"||k==="ed"||k==="vd") t.encoding=THREE.sRGBEncoding; PH[k]=t;
       if(++n===N){ PH.ready=true; for(const c in texCache) delete texCache[c]; for(const c in woodCache) delete woodCache[c]; for(const c in matCache) if(c[0]==="W"||c[0]==="F") delete matCache[c]; try{ build(); }catch(e){} } },undefined,()=>{}); })();
-// portes : modèle 3D « Vintage Door » (vantail mouluré, chambranle, poignée sur plaque), adapté à chaque ouverture
-const PORTE={ready:false,tex:null,cache:new Map()};
-(function(){ const sc=document.createElement("script"); sc.src="tex/porte-model.js"; sc.async=true;
-  sc.onload=()=>{ try{ const Mo=window.PORTE_MODEL; if(!Mo) return; const dec=(b,T)=>{ const s=atob(b), u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return new T(u.buffer); };
-    const raw=pt=>({p:dec(pt.p,Float32Array),i:dec(pt.i,Uint16Array),n:pt.n?dec(pt.n,Int8Array):null});
-    const L=raw(Mo.leaf), F=raw(Mo.frame), Hd=raw(Mo.handle), bb=P=>{ const mn=[1e9,1e9,1e9], mx=[-1e9,-1e9,-1e9]; for(let i=0;i<P.length;i++){ const k=i%3; mn[k]=Math.min(mn[k],P[i]); mx[k]=Math.max(mx[k],P[i]); } return {mn,mx}; };
-    PORTE.L=L; PORTE.F=F; PORTE.lb=bb(L.p); const lb=PORTE.lb, xc=(lb.mn[0]+lb.mx[0])/2; PORTE.xc=xc;
-    // poignée : repère « bord de serrure » (x ≤ 0), hauteur depuis le bas du vantail ; deux exemplaires (une face, et son miroir)
-    const mk=sg=>{ const n=Hd.p.length/3, P=new Float32Array(n*3); for(let i=0;i<n;i++){ P[i*3]=Hd.p[i*3+2]-lb.mx[2]; P[i*3+1]=Hd.p[i*3+1]-lb.mn[1]; P[i*3+2]=-(Hd.p[i*3]-xc)*sg; }
-      const I=new Uint16Array(Hd.i); if(sg<0) for(let t=0;t<I.length;t+=3){ const a=I[t+1]; I[t+1]=I[t+2]; I[t+2]=a; }
-      const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.BufferAttribute(P,3)); g.setIndex(new THREE.BufferAttribute(I,1)); g.computeVertexNormals(); return g; };
-    PORTE.h1=mk(1); PORTE.h2=mk(-1); window.PORTE_MODEL=null; PORTE.ready=true; try{ build(); }catch(e){} }catch(e){ console.warn(e); } };
-  document.head.appendChild(sc);
-  new THREE.TextureLoader().load("tex/porte_bois.jpg",t=>{ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.encoding=THREE.sRGBEncoding; t.anisotropy=8; PORTE.tex=t; try{ build(); }catch(e){} },undefined,()=>{}); })();
-// géométrie remappée : f(x,y,z modèle) → position locale ; normales tournées (x,y,z)→(z,y,-x) ; UV planaires (1 motif ≈ 1 m)
-function porteGeo(R,f){ const n=R.p.length/3, P=new Float32Array(n*3), N=new Float32Array(n*3), U=new Float32Array(n*2);
-  for(let i=0;i<n;i++){ const q=f(R.p[i*3],R.p[i*3+1],R.p[i*3+2]); P[i*3]=q[0]; P[i*3+1]=q[1]; P[i*3+2]=q[2];
-    const nx=R.n[i*3+2]/127, ny=R.n[i*3+1]/127, nz=-R.n[i*3]/127; N[i*3]=nx; N[i*3+1]=ny; N[i*3+2]=nz;
-    const ax=Math.abs(nx), ay=Math.abs(ny), az=Math.abs(nz); if(az>=ax&&az>=ay){ U[i*2]=q[0]; U[i*2+1]=q[1]; } else if(ax>=ay){ U[i*2]=q[2]; U[i*2+1]=q[1]; } else { U[i*2]=q[0]; U[i*2+1]=q[2]; } }
-  const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.BufferAttribute(P,3)); g.setAttribute("normal",new THREE.BufferAttribute(N,3)); g.setAttribute("uv",new THREE.BufferAttribute(U,2)); g.setIndex(new THREE.BufferAttribute(R.i,1)); return g; }
-function porteLeafGeo(w,hh){ const k="L"+w.toFixed(3)+"|"+hh.toFixed(3); if(PORTE.cache.has(k)) return PORTE.cache.get(k); const b=PORTE.lb, xc=PORTE.xc;
-  const g=porteGeo(PORTE.L,(x,y,z)=>[0.005+(z-b.mn[2])/(b.mx[2]-b.mn[2])*(w-0.01), 0.005+(y-b.mn[1])/(b.mx[1]-b.mn[1])*(hh-0.01), -(x-xc)]); PORTE.cache.set(k,g); return g; }
-function porteFrameGeo(w,H,ep){ const k="F"+w.toFixed(3)+"|"+H.toFixed(3)+"|"+ep.toFixed(3); if(PORTE.cache.has(k)) return PORTE.cache.get(k);
-  const O=18.45*0.0254, T=86.42*0.0254, J0=-2.15*0.0254, J1=2.58*0.0254;
-  const g=porteGeo(PORTE.F,(x,y,z)=>{ const az=Math.abs(z), X=Math.sign(z)*(az<=O+1e-4?az/O*w/2:w/2+(az-O)), Y=y<=T+1e-4?y/T*H:H+(y-T);
-    const Z=x<=J0?-ep/2+(x-J0):x>=J1?ep/2+(x-J1):-ep/2+(x-J0)/(J1-J0)*ep; return [X,Y,-Z]; }); PORTE.cache.set(k,g); return g; }
-let _porteMat=null; function porteHandleMat(){ return _porteMat||(_porteMat=new THREE.MeshStandardMaterial({color:lin("#8b857b"),roughness:.42,metalness:.85,envMapIntensity:1.1})); }
 function phRep(t,sx,sy){ const c=t.clone(); c.needsUpdate=true; c.repeat.set(sx,sy); return c; }
 // parquet noyer : le placage est découpé en lames de 18 cm décalées, avec joints
 function noyerCanvas(){ const img=PH.nd.image, S=1024, c=document.createElement("canvas"); c.width=c.height=S; const g=c.getContext("2d"), R=rnd(77), rows=Math.round(1/0.18), h=S/rows;
@@ -592,10 +565,9 @@ function whiteWoodTex(){ if(_ww) return _ww; if(!PH.ready||!PH.ed||!PH.ed.image|
   g.globalCompositeOperation="saturation"; g.globalAlpha=.85; g.fillStyle="#808080"; g.fillRect(0,0,c.width,c.height);
   g.globalCompositeOperation="screen"; g.globalAlpha=.6; g.fillStyle="#f3eee6"; g.fillRect(0,0,c.width,c.height);
   const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=4; return _ww=t; }
-function doorWoodMat(){ if(PORTE.tex) return new THREE.MeshStandardMaterial({color:0xffffff,map:PORTE.tex,roughness:.6,envMapIntensity:.6}); const t=whiteWoodTex(); return new THREE.MeshStandardMaterial(t?{color:0xffffff,map:t,roughness:.55,envMapIntensity:.6}:{color:lin("#f5f3ec"),roughness:.5}); }
+function doorWoodMat(){ const t=whiteWoodTex(); return new THREE.MeshStandardMaterial(t?{color:0xffffff,map:t,roughness:.55,envMapIntensity:.6}:{color:lin("#f5f3ec"),roughness:.5}); }
 function addDoorFrame(w,o){
   const f=frame(w), ang=-Math.atan2(f.u[1],f.u[0]), m=doorWoodMat(), bw=0.06, th=0.015, H=o.h;
-  if(PORTE.ready){ const c=ptAt(w,o.at+o.w/2), me=new THREE.Mesh(porteFrameGeo(o.w,H,w.ep),m); me.userData.noMerge=true; me.position.set(c[0],0,c[1]); me.rotation.y=ang; me.castShadow=me.receiveShadow=true; group.add(me); return; }
   for(const k of [1,-1]){ const off=w.ep/2+th/2;
     const piece=(s,len,z0,z1)=>{ const c=ptAt(w,s); const me=new THREE.Mesh(new THREE.BoxGeometry(len,z1-z0,th),m); me.position.set(c[0]+f.n[0]*off*k,(z0+z1)/2,c[1]+f.n[1]*off*k); me.rotation.y=ang; me.castShadow=true; group.add(me); };
     piece(o.at-bw/2,bw,0,H+bw); piece(o.at+o.w+bw/2,bw,0,H+bw); piece(o.at+o.w/2,o.w,H,H+bw); }
@@ -1033,14 +1005,12 @@ function build(){ fitDoors();
       const key=vid+":"+o.id; if(doorTarget[key]===undefined){ doorTarget[key]=doorCur[key]=o.fermee?0:1; }
       const pivot=new THREE.Group(); pivot.position.set(hinge[0],0,hinge[1]);
       const leafMat=doorWoodMat();
-      if(PORTE.ready){ const leaf=new THREE.Mesh(porteLeafGeo(o.w,hh),leafMat); leaf.castShadow=leaf.receiveShadow=true; pivot.add(leaf);
-        const hy=Math.min(0,hh-1.32); for(const hg of [PORTE.h1,PORTE.h2]){ const hm=new THREE.Mesh(hg,porteHandleMat()); hm.position.set(o.w-0.005,hy,0); hm.castShadow=true; pivot.add(hm); } } else {
       const leaf=new THREE.Mesh(new THREE.BoxGeometry(o.w-0.01,hh-0.01,0.04),leafMat); leaf.position.set(o.w/2,hh/2,0); leaf.castShadow=leaf.receiveShadow=true; pivot.add(leaf);
       // poignées des deux côtés, côté opposé à la charnière, à 1 m du sol
       const metal=mat("#bfc3c6",{roughness:.3,metalness:.7}), hx=o.w-0.07, hy=Math.min(1.0,hh-0.1);
       for(const k of [1,-1]){ const ros=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.14,0.012),metal); ros.position.set(hx,hy-0.03,k*0.026); pivot.add(ros);
         const lev=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.018,0.018),metal); lev.position.set(hx-0.05,hy,k*0.045); pivot.add(lev);
-        const neck=new THREE.Mesh(new THREE.BoxGeometry(0.018,0.018,0.03),metal); neck.position.set(hx,hy,k*0.035); pivot.add(neck); } }
+        const neck=new THREE.Mesh(new THREE.BoxGeometry(0.018,0.018,0.03),metal); neck.position.set(hx,hy,k*0.035); pivot.add(neck); }
       pivot.traverse(c=>{ c.userData.porte=key; });
       doorObjs[key]={pivot,leafMat,a0,da,o}; pivot.rotation.y=-(a0+da*doorCur[key]); group.add(pivot);
       const pts=[]; for(let i=0;i<=24;i++){ const a=a0+da*i/24; pts.push(new THREE.Vector3(hinge[0]+Math.cos(a)*o.w,0.012,hinge[1]+Math.sin(a)*o.w)); }
