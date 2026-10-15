@@ -309,8 +309,9 @@ const CATALOGUE = [
     {t:"vasque",    nom:"Meuble vasque",        w:0.80,d:0.46,h:0.85,c:"#f2f1ec", g:"plan"},
     {t:"douche",    nom:"Douche à l'italienne", w:0.90,d:1.20,h:0.02,c:"#e9e8e3", g:"tapis"},
     {t:"lavelinge", nom:"Lave-linge",           w:0.60,d:0.60,h:0.85,c:"#f2f1ec", g:"box"},
-    {t:"paroi",     nom:"Paroi de douche vitrée", w:0.90,d:0.06,h:2.00,c:"#2b2d30", g:"paroi"},
+    {t:"paroi",     nom:"Paroi de douche vitrée", w:0.90,d:0.90,h:2.00,c:"#2b2d30", g:"paroi"},
     {t:"paroi2",    nom:"Porte de douche coulissante", w:1.20,d:0.08,h:2.00,c:"#c9ccce", g:"paroicoul"},
+    {t:"portedouche", nom:"Porte de douche battante", w:0.80,d:0.06,h:1.95,c:"#c9ccce", g:"portedouche"},
     {t:"rideau",    nom:"Rideau de douche",     w:0.90,d:0.10,h:2.00,c:"#f2f1ec", g:"rideau"},
     {t:"secheserv", nom:"Sèche-serviettes",     w:0.50,d:0.10,h:1.20,z:0.30,c:"#f4f4f0", g:"secheserv", mural:true}
   ]}
@@ -557,8 +558,15 @@ function addSkirting(H){
             const me=new THREE.Mesh(new THREE.BoxGeometry(b-a,hz,th),m); me.position.set(c[0]+f.n[0]*off*k,hz/2,c[1]+f.n[1]*off*k); me.rotation.y=ang; me.receiveShadow=true; group.add(me); a=null; } } } } }
 }
 // chambranles autour des portes, des deux côtés
+let _ww=null;
+function whiteWoodTex(){ if(_ww) return _ww; if(!PH.ready||!PH.ed||!PH.ed.image||!PH.ed.image.width) return null; const img=PH.ed.image, c=document.createElement("canvas"); c.width=img.height; c.height=img.width;
+  const g=c.getContext("2d"); g.translate(c.width/2,c.height/2); g.rotate(Math.PI/2); g.drawImage(img,-img.width/2,-img.height/2); g.setTransform(1,0,0,1,0,0);
+  g.globalCompositeOperation="saturation"; g.globalAlpha=.85; g.fillStyle="#808080"; g.fillRect(0,0,c.width,c.height);
+  g.globalCompositeOperation="screen"; g.globalAlpha=.6; g.fillStyle="#f3eee6"; g.fillRect(0,0,c.width,c.height);
+  const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=4; return _ww=t; }
+function doorWoodMat(){ const t=whiteWoodTex(); return new THREE.MeshStandardMaterial(t?{color:0xffffff,map:t,roughness:.55,envMapIntensity:.6}:{color:lin("#f5f3ec"),roughness:.5}); }
 function addDoorFrame(w,o){
-  const f=frame(w), ang=-Math.atan2(f.u[1],f.u[0]), m=mat(WOODWORK,{roughness:.45}), bw=0.06, th=0.015, H=o.h;
+  const f=frame(w), ang=-Math.atan2(f.u[1],f.u[0]), m=doorWoodMat(), bw=0.06, th=0.015, H=o.h;
   for(const k of [1,-1]){ const off=w.ep/2+th/2;
     const piece=(s,len,z0,z1)=>{ const c=ptAt(w,s); const me=new THREE.Mesh(new THREE.BoxGeometry(len,z1-z0,th),m); me.position.set(c[0]+f.n[0]*off*k,(z0+z1)/2,c[1]+f.n[1]*off*k); me.rotation.y=ang; me.castShadow=true; group.add(me); };
     piece(o.at-bw/2,bw,0,H+bw); piece(o.at+o.w+bw/2,bw,0,H+bw); piece(o.at+o.w/2,o.w,H,H+bw); }
@@ -790,13 +798,24 @@ function furnMesh(m){
       addBox(pg,xa,xb,za-.021,za+.003,ph-.02,ph,alu); addBox(pg,xa,xb,za-.021,za+.003,.02,.04,alu); slides.push({mesh:pg,mat:pm,x:0,shift:sh}); }
     g.userData.slides=slides; }
   else if(kind==="paroi"||kind==="paroicoul"){ const prof=new THREE.MeshStandardMaterial({color:lin(m.c),roughness:.3,metalness:.8}), zc=(z0+z1)/2;
-    if(kind==="paroi"){ B(x0+.012,x1,zc-.004,zc+.004,.02,h,glassM); B(x0,x0+.012,zc-.012,zc+.012,0,h,prof); B(x0+.012,x1,zc-.006,zc+.006,0,.02,prof);
-      C(.008,.008,.45,x1-.03,h-.06,zc-.225,prof,Math.PI/2,0,10); B(x1-.04,x1-.02,zc-.45,zc-.44,h-.075,h-.045,prof); }
+    if(kind==="paroi"){ const zg=z1-.03, L=Math.max(.2,zg-z0); B(x0+.012,x1,zg-.004,zg+.004,.02,h,glassM); B(x0,x0+.012,zg-.012,zg+.012,0,h,prof); B(x0+.012,x1,zg-.006,zg+.006,0,.02,prof);
+      // barre de maintien : du haut du verre jusqu'au mur (la profondeur du meuble règle sa longueur)
+      C(.009,.009,L,x1-.03,h-.06,zg-L/2,prof,Math.PI/2,0,10); B(x1-.045,x1-.015,z0,z0+.012,h-.08,h-.04,prof); B(x1-.04,x1-.02,zg-.02,zg+.012,h-.075,h-.045,prof); }
     else { const half=(w-.02)/2; B(x0,x1,z0,z1,h-.04,h,prof); B(x0,x1,z0,z1,0,.015,prof);
       B(x0+.01,x0+.01+half+.04,zc-.025,zc-.017,.02,h-.045,glassM); B(x1-.01-half-.04,x1-.01,zc+.017,zc+.025,.02,h-.045,glassM);
       B(x0,x0+.012,z0,z1,0,h,prof); B(x1-.012,x1,z0,z1,0,h,prof); B(x1-.01-half-.03,x1-.01-half-.018,zc+.025,zc+.045,h*.45,h*.6,chrome); } }
-  else if(kind==="rideau"){ const barH=h-.02; C(.011,.011,w,0,barH,0,chrome,0,Math.PI/2,12); for(const xs of [x0,x1]) C(.025,.025,.012,xs,barH,0,chrome,0,Math.PI/2,16);
-    const fab=fabric(m.c), n=Math.max(6,Math.round(w/0.07)), pw=w/n; for(let i=0;i<n;i++){ const xa=x0+i*pw, oz=(i%2?.022:-.022); B(xa,xa+pw+.004,oz-.004,oz+.004,.12,barH-.04,fab); C(.012,.012,.006,xa+pw/2,barH,0,chrome,Math.PI/2,0,10); } }
+  else if(kind==="rideau"){ const top=h-.05, bot=.06, fab=fabric(m.c); fab.side=THREE.DoubleSide;
+    const nx=Math.max(40,Math.round(w/.012)), geo=new THREE.PlaneGeometry(w,top-bot,nx,8), P=geo.attributes.position;
+    for(let i=0;i<P.count;i++){ const x=P.getX(i), y=P.getY(i), k=(y+(top-bot)/2)/(top-bot); P.setZ(i,(.028+.008*(1-k))*Math.sin((x-x0)*2*Math.PI/.13)+.004*Math.sin(x*37)); }
+    geo.computeVertexNormals(); { const U=geo.attributes.uv; for(let i=0;i<P.count;i++) U.setXY(i,P.getX(i),P.getY(i)); }
+    const cm=new THREE.Mesh(geo,fab); cm.position.set(0,(top+bot)/2,0); cm.castShadow=cm.receiveShadow=true; g.add(cm);
+    for(let x=x0+.03;x<x1-.01;x+=.13){ const r=new THREE.Mesh(new THREE.TorusGeometry(.018,.003,6,16),chrome); r.position.set(x,top+.012,0); r.rotation.y=Math.PI/2; g.add(r); } }
+  else if(kind==="portedouche"){ const prof=new THREE.MeshStandardMaterial({color:lin(m.c),roughness:.3,metalness:.8}), zc=(z0+z1)/2;
+    B(x0,x0+.015,zc-.015,zc+.015,0,h,prof);   // profilé mural avec charnières
+    const pg=new THREE.Group(); pg.position.set(x0+.018,0,zc); g.add(pg); const gm=glassM.clone(); gm.opacity=.2;
+    const lw=w-.025; addBox(pg,0,lw,-.004,.004,.02,h-.01,gm); for(const y of [.25,h-.3]) addBox(pg,-.01,.03,-.012,.012,y,y+.07,chrome);
+    addBox(pg,lw-.07,lw-.055,.004,.03,h*.45,h*.6,chrome); addBox(pg,lw-.07,lw-.055,-.03,-.004,h*.45,h*.6,chrome);
+    g.userData.swings=[{pivot:pg,mat:gm,ang:-1.45}]; }
   else if(kind==="secheserv"){ const tb=M(m.c,.3), zt=z1-.035; for(const tx of [x0+.02,x1-.02]) C(.016,.016,h,tx,h/2,zt,tb,0,0,16);
     for(let y=.06;y<h-.03;y+=(y<h*.45?.055:.075)) C(.011,.011,w-.04,0,y,zt,tb,0,Math.PI/2,12);
     for(const y of [.12,h-.12]) for(const tx of [x0+.02,x1-.02]) B(tx-.012,tx+.012,z0,zt,y-.012,y+.012,chrome); C(.014,.014,.05,x1-.02,-.025,zt,chrome); }
@@ -971,7 +990,7 @@ function build(){ fitDoors();
       const a0=Math.atan2(other[1]-hinge[1],other[0]-hinge[0]), a1=Math.atan2(v[1],v[0]); let da=a1-a0; while(da>Math.PI) da-=2*Math.PI; while(da<-Math.PI) da+=2*Math.PI;
       const key=vid+":"+o.id; if(doorTarget[key]===undefined){ doorTarget[key]=doorCur[key]=o.fermee?0:1; }
       const pivot=new THREE.Group(); pivot.position.set(hinge[0],0,hinge[1]);
-      const leafMat=new THREE.MeshStandardMaterial({color:lin("#f5f3ec"),roughness:.5});
+      const leafMat=doorWoodMat();
       const leaf=new THREE.Mesh(new THREE.BoxGeometry(o.w-0.01,hh-0.01,0.04),leafMat); leaf.position.set(o.w/2,hh/2,0); leaf.castShadow=leaf.receiveShadow=true; pivot.add(leaf);
       // poignées des deux côtés, côté opposé à la charnière, à 1 m du sol
       const metal=mat("#bfc3c6",{roughness:.3,metalness:.7}), hx=o.w-0.07, hy=Math.min(1.0,hh-0.1);
@@ -1023,7 +1042,9 @@ function build(){ fitDoors();
     (V.combles?addSlopedBox:addBox)(group,e.x+.004,e.x+e.w-.004,e.y+.004,e.y+e.d-.004,e.z,Math.min(z1,V.hauteur-.004),mat(e.couleur,{roughness:e.type==="cuisine"?.35:.8}));
     if(e.plan && e.z+e.h+0.03<=CUT+0.03) addBox(group,e.x,e.x+e.w,e.y-0.02,e.y+e.d,e.z+e.h,e.z+e.h+0.03,mat(e.plan,{roughness:.4}));
   }
-  for(const m of meubles()){ if(!furnVisible(m)) continue; const o=furnMesh(m); group.add(o); furnObjs[m.id]=o; }
+  for(const m of meubles()){ if(!furnVisible(m)) continue; const o=furnMesh(m); group.add(o); furnObjs[m.id]=o;
+    (o.userData.swings||[]).forEach((sw,i)=>{ const key=vid+":m:"+m.id+":"+i; if(doorTarget[key]===undefined){ doorTarget[key]=doorCur[key]=0; }
+      sw.pivot.traverse(c=>{ c.userData.porte=key; }); doorObjs[key]={pivot:sw.pivot,leafMat:sw.mat,o:{nom:nameOf(m)},apply:c=>{ sw.pivot.rotation.y=sw.ang*c; }}; sw.pivot.rotation.y=sw.ang*doorCur[key]; }); }
   if(walk) computeBlockers();
   mergeStatic(group);   // fenêtres, plinthes, encadrements… fusionnés par matière
   renderer.shadowMap.needsUpdate=true;
@@ -1309,10 +1330,11 @@ function furnSymbol(m,ink,muted,pan,selC){
   if(kind==="cuisine"){ const mw=w/4, zf=Math.min(d,0.6)+z0; for(let i=1;i<4;i++) s+=L(x0+i*mw,z0,x0+i*mw,zf);
     s+=R(x0+mw*3.5-0.2,z0+0.12,0.32,0.34); for(const [ox,oz] of [[-.14,-.11],[.14,-.11],[-.14,.12],[.14,.12]]) s+=`<circle cx="${x0+mw*1.5+ox}" cy="${(z0+zf)/2+oz}" r="0.07" fill="none" stroke="${muted}" stroke-width="0.01"/>`;
     s+=`<rect x="${x0}" y="${z0}" width="${w}" height="${Math.min(.35,d)}" fill="none" stroke="${muted}" stroke-width="0.01" stroke-dasharray="0.05 0.04"/>`; }
-  if(kind==="paroi"||kind==="paroicoul"||kind==="rideau") s+=L(x0,z0+d/2,x0+w,z0+d/2);
+  if(kind==="paroicoul"||kind==="rideau"||kind==="portedouche") s+=L(x0,z0+d/2,x0+w,z0+d/2);
+  if(kind==="paroi") s+=L(x0,z0+d-.03,x0+w,z0+d-.03);
   if(kind==="secheserv") s+=`<text x="0" y="0.035" text-anchor="middle" font-size="0.08" fill="${ink}">S-S</text>`;
   if(kind==="frigo") s+=`<text x="0" y="0.04" text-anchor="middle" font-size="0.1" fill="${ink}">Frigo</text>`;
-  if(kind!=="clim" && kind!=="tele" && kind!=="frigo" && kind!=="cuisine" && kind!=="secheserv" && kind!=="paroi" && kind!=="paroicoul" && kind!=="rideau" && w>=0.7 && d>=0.4) s+=`<text x="0" y="${Math.min(d/2-0.08,0.06)}" text-anchor="middle" font-size="0.12" fill="${ink}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>${label}</text>`;
+  if(kind!=="clim" && kind!=="tele" && kind!=="frigo" && kind!=="cuisine" && kind!=="secheserv" && kind!=="paroi" && kind!=="paroicoul" && kind!=="rideau" && kind!=="portedouche" && w>=0.7 && d>=0.4) s+=`<text x="0" y="${Math.min(d/2-0.08,0.06)}" text-anchor="middle" font-size="0.12" fill="${ink}" ${Math.abs(m.rot%180)===90?`transform="rotate(${-m.rot})"`:""}>${label}</text>`;
   return s+"</g>";
 }
 function renderPlan(){
