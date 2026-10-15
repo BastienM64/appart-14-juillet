@@ -8,3 +8,8 @@ et programme de travaux, figés sur l'état du projet.
 - `projet.js` : choix figés (meubles, murs retirés, sols, peintures)
 
 Pour mettre à jour le site, remplacer `projet.js` (et `data.js` si la structure change).
+
+## Ressources tierces
+- Three.js r128 (MIT) et ses modules d'exemple (`lib/`).
+- Texture de parquet « hardwood2 » issue des exemples Three.js (`tex/parquet_*.jpg`).
+- HDRI « Royal Esplanade » de Poly Haven, licence CC0 (`tex/env.js`, encodé en base64).
