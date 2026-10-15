@@ -37,8 +37,8 @@ window.APPART = {
         { id: "p_entree", nom: "Porte d'entrée",        type: "porte",   mur: "m_palier",  at: 1.60, w: 0.82, h: 2.04, charniere: "a", sens: 1 },
         { id: "p_ch1",    nom: "Porte chambre 1",       type: "porte",   mur: "c_sej_ch1", at: 2.40, w: 0.89, h: 2.04, charniere: "b", sens: -1 },
         { id: "p_ch2",    nom: "Porte chambre 2",       type: "porte",   mur: "c_sej_ch2", at: 0.02, w: 0.79, h: 2.04, charniere: "b", sens: -1 },
-        { id: "p_sde",    nom: "Porte salle d'eau",     type: "porte",   mur: "m_refend",  at: 1.70, w: 0.70, h: 2.04, charniere: "a", sens: -1 },
-        { id: "p_sas",    nom: "Porte dégagement WC",   type: "porte",   mur: "m_refend",  at: 3.75, w: 0.68, h: 2.04, charniere: "b", sens: -1 },
+        { id: "p_sde",    nom: "Porte salle d'eau",     type: "porte",   mur: "m_refend",  at: 1.60, w: 0.70, h: 2.04, charniere: "a", sens: -1 },
+        { id: "p_sas",    nom: "Porte dégagement WC",   type: "porte",   mur: "m_refend",  at: 3.87, w: 0.68, h: 2.04, charniere: "b", sens: -1 },
         { id: "p_wc",     nom: "Porte WC",              type: "porte",   mur: "c_sas_wc",  at: 0.07, w: 0.60, h: 2.04, charniere: "a", sens: -1 },
         { id: "b_douche", nom: "Entrée niche de douche", type: "baie",   mur: "c_douche",  at: 0.06, w: 0.62, h: 2.00 },
 
