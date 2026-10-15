@@ -56,7 +56,7 @@ window.APPART = {
 
       pieces: [
         { id: "sde",    nom: "Salle d'eau",      sol: "carrelage-rose",  murs: "#e2c2bb", faience: { c: "#d9b2aa", t: 0.20 }, poly: [[0,0],[3.02,0],[3.02,2.50],[0,2.50]] },
-        { id: "deg",    nom: "Dégagement",       sol: "chene",           murs: "#ece6da", poly: [[3.10,0],[3.91,0],[3.91,3.35],[2.21,3.35],[2.21,2.56],[3.10,2.56]] },
+        { id: "deg",    nom: "Dégagement",       sol: "carrelage-blanc-xl",           murs: "#ece6da", poly: [[3.10,0],[3.91,0],[3.91,3.35],[2.21,3.35],[2.21,2.56],[3.10,2.56]] },
         { id: "cel",    nom: "Cellier",          sol: "carrelage-blanc", murs: "#eeeeea", poly: [[0,2.56],[2.15,2.56],[2.15,3.66],[0,3.66]] },
         { id: "ch",     nom: "Chambre",          sol: "chene",           murs: "#ece6da", poly: [[3.97,0],[7.03,0],[7.03,3.28],[3.97,3.28]] },
         { id: "sejour", nom: "Cuisine / Séjour", sol: "carrelage-blanc-xl",           murs: "#ece6da", poly: [[0,3.72],[2.21,3.72],[2.21,3.35],[7.03,3.35],[7.03,6.24],[0,6.24]] }
