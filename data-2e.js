@@ -69,7 +69,7 @@ window.APPART = {
         { id: "douche",   nom: "Receveur de douche",    type: "sanitaire", x: 2.21, y: 0.00, w: 0.79, d: 0.79, z: 0, h: 0.12, couleur: "#f7f7f5" },
         { id: "lavabo",   nom: "Lavabo",                type: "sanitaire", x: 1.50, y: 0.00, w: 0.60, d: 0.48, z: 0.80, h: 0.15, couleur: "#f7f7f5" },
         { id: "cuvette",  nom: "WC",                    type: "sanitaire", x: 0.02, y: 1.72, w: 0.62, d: 0.40, z: 0, h: 0.40, couleur: "#f7f7f5" },
-        { id: "pl_ch",    nom: "Placard chambre",       type: "placard",   x: 6.48, y: 0.00, w: 0.55, d: 1.35, z: 0, h: 1.30, couleur: "#f0eee8" },
+        { id: "pl_ch",    nom: "Rangement chambre (étagères, portes coulissantes)", type: "dressing", etageres: true, dos: "x1", x: 6.48, y: 0.00, w: 0.55, d: 1.35, z: 0, h: 1.10, couleur: "#f0eee8" },
         // cuisine en L (plan : 2,54 m le long du mur gauche + retour le long du mur du fond)
         // modules listés depuis l'angle : l'évier est sous la fenêtre ; plaque + hotte au milieu du retour (15/10)
         { id: "cuisine_g", nom: "Cuisine — linéaire mur gauche", groupe: "cuisine", type: "cuisine_run", dos: "x0", x: 0.00, y: 3.72, w: 0.61, d: 2.52, z: 0, h: 0.90, couleur: "#e9e6df", plan: "#cfccc4",
