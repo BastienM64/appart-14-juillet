@@ -28,10 +28,11 @@ window.PROJET_FIGE = {
   }
  },
  "retires": {
-  "projet": [],
-  "existant": []
+  "existant": [],
+  "projet": []
  },
  "meubles": {
+  "existant": [],
   "projet": [
    {
     "c": "#d9cdb8",
@@ -155,8 +156,19 @@ window.PROJET_FIGE = {
     "x": 5.3,
     "y": 3.48,
     "z": 0.5
+   },
+   {
+    "id": "mmv9jy0bk520",
+    "t": "secheserv",
+    "x": 1.55,
+    "y": 2.445,
+    "rot": 180,
+    "w": 0.5,
+    "d": 0.1,
+    "h": 1.2,
+    "c": "#f4f4f0",
+    "z": 0.3
    }
-  ],
-  "existant": []
+  ]
  }
 };
