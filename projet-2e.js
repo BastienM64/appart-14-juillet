@@ -228,26 +228,26 @@ window.PROJET_FIGE = {
     "y": 0.4
    },
    {
-    "id": "mmv9npegy766",
-    "t": "portedouche",
-    "x": 2.6,
-    "y": 0.75,
-    "rot": 0,
-    "w": 0.8,
+    "c": "#c9ccce",
     "d": 0.06,
     "h": 2,
-    "c": "#c9ccce"
+    "id": "mmv9npegy766",
+    "rot": 0,
+    "t": "portedouche",
+    "w": 0.8,
+    "x": 2.6,
+    "y": 0.75
    },
    {
-    "id": "mmv9nsdjk287",
-    "t": "vasque",
-    "x": 1.8,
-    "y": 0.235,
-    "rot": 0,
-    "w": 0.8,
+    "c": "#9aa88c",
     "d": 0.46,
     "h": 0.85,
-    "c": "#9aa88c"
+    "id": "mmv9nsdjk287",
+    "rot": 0,
+    "t": "vasque",
+    "w": 0.8,
+    "x": 1.8,
+    "y": 0.235
    }
   ]
  }
