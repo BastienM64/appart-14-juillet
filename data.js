@@ -35,7 +35,7 @@ window.APPART = {
       ],
 
       ouvertures: [
-        { id: "p_entree", nom: "Porte d'entrée",        type: "porte",   mur: "m_palier",  at: 1.60, w: 0.82, h: 2.04, charniere: "a", sens: 1 },
+        { id: "p_entree", nom: "Porte d'entrée",        type: "porte",   mur: "m_palier",  at: 1.60, w: 0.82, h: 2.04, charniere: "b", sens: 1 },   // 29/10 — sens actuel sur place (charnière côté opposé)
         { id: "p_ch1",    nom: "Porte chambre 1",       type: "porte",   mur: "c_sej_ch1", at: 2.40, w: 0.89, h: 2.04, charniere: "b", sens: -1 },
         { id: "p_ch2",    nom: "Porte chambre 2",       type: "porte",   mur: "c_sej_ch2", at: 0.02, w: 0.79, h: 2.04, charniere: "b", sens: -1 },
         { id: "p_sde",    nom: "Porte salle d'eau",     type: "porte",   mur: "m_refend",  at: 1.60, w: 0.70, h: 2.04, charniere: "a", sens: -1 },
@@ -98,6 +98,8 @@ window.APPART = {
   pc("ch2").nom = "Chambre";
 
   // 14/10 — porte séjour → chambre supprimée : mur continu derrière le frigo
+  // 29/10 — porte d'entrée : on inverse le sens de l'existant (plus pratique)
+  Object.assign(P.ouvertures.find(o => o.id === "p_entree"), { charniere: "a" });
   P.ouvertures.splice(op("p_ch2"), 1);
 
   // 14/10 — nouvelle porte de chambre côté salon, ouvrant vers la chambre
