@@ -106,7 +106,7 @@ window.APPART = {
   Object.assign(P.elements.find(e => e.id === "cuisine_g"), { y: 2.56, d: 3.68,
     modules: [["angle", 0.89], ["tiroirs", 0.80], ["evier", 0.77, { robinet: "cote" }], ["porte", 0.58], ["coin", 0.64]] });
   P.elements.push({ id: "cuisine_n", nom: "Cuisine — retour mur salle d'eau (lave-linge)", groupe: "cuisine", type: "cuisine_run", dos: "y0", x: 0.63, y: 2.56, w: 0.97, d: 0.62, z: 0, h: 0.90, couleur: "#e9e6df", plan: "#cfccc4",
-    modules: [["porte", 0.37], ["ll", 0.60]] });
+    modules: [["porte", 0.33], ["ll", 0.64]] });   // niche de 64 cm : 60 cm utiles entre les joues
   Object.assign(P.ouvertures.find(o => o.id === "p_cel"), { at: 1.53, sens: 1, fermee: true });   // ouvre côté séjour, fermée par défaut
   window.APPART.variantes.projet = P;
 })();

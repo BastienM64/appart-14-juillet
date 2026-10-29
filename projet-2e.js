@@ -191,7 +191,7 @@ window.PROJET_FIGE = {
     "rot": 0,
     "t": "lavelinge",
     "w": 0.6,
-    "x": 1.3,
+    "x": 1.28,
     "y": 2.86
    },
    {
