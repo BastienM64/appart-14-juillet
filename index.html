@@ -751,7 +751,12 @@ function furnMesh(m){
       inox=new THREE.MeshStandardMaterial({color:lin("#c9ccce"),roughness:.28,metalness:1,envMapIntensity:1.1}), inoxD=new THREE.MeshStandardMaterial({color:lin("#8d9093"),roughness:.35,metalness:1}),
       verre=new THREE.MeshStandardMaterial({color:lin("#0d0e10"),roughness:.08,metalness:.2,envMapIntensity:1.2}), zc=(z0+z1)/2;
     const toW=(lx,lz)=>{ const f=-(m.rot||0)*Math.PI/180; return [m.x+lx*Math.cos(f)+lz*Math.sin(f), m.y-lx*Math.sin(f)+lz*Math.cos(f)]; };
-    B(x0+.01,x1-.01,z0+.03,z1-.06,0,.10,leg); B(x0,x1,z0,z1-.02,.10,bh-ct,carc); B(x0,x1,z0,z1+.02,bh-ct,bh,planM);
+    // caissons module par module : une niche « ll » (lave-linge sous le plan) n'a ni caisson ni socle, seulement deux joues
+    { let a=x0; for(const [t,l] of (m.mods||[["porte",w]])){ const b=a+l;
+        if(t==="ll"){ B(a,a+.018,z0,z1-.02,0,bh-ct,carc); B(b-.018,b,z0,z1-.02,0,bh-ct,carc); }
+        else { B(a+(a<=x0+1e-6?.01:0),b-(b>=x1-1e-6?.01:0),z0+.03,z1-.06,0,.10,leg); B(a,b,z0,z1-.02,.10,bh-ct,carc); }
+        a=b; } }
+    B(x0,x1,z0,z1+.02,bh-ct,bh,planM);
     let a=x0; for(const [t,l,opt] of (m.mods||[["porte",w]])){ const b=a+l, xm=(a+b)/2;
       if(t==="tiroirs"){ const hh=(bh-ct-.10)/3; for(let k=0;k<3;k++) front(a,b,.10+k*hh,.10+(k+1)*hh,"h"); }
       else if(t==="fileur") B(a+.002,b-.002,z1-.018,z1,.10,bh-ct,body);
@@ -772,6 +777,7 @@ function furnMesh(m){
         for(const ox of [-hw*.5,hw*.5]) B(sx+ox-hw*.42,sx+ox+hw*.42,zc-.19,zc+.15,bh-.17,bh+.0045,inoxD);
         if(side){ const tx=b-.055, tz=z0+.40; C(.02,.022,.2,tx,bh+.1,tz,inox,0,0,16); B(tx-.17,tx,tz-.012,tz+.012,bh+.18,bh+.204,inox); B(tx-.17,tx-.15,tz-.011,tz+.011,bh+.12,bh+.19,inox); B(tx-.005,tx+.005,tz+.02,tz+.06,bh+.17,bh+.185,inox); }
         else { const tx=xm; B(tx-.018,tx+.018,z0+.03,z0+.066,bh,bh+.2,inox); B(tx-.013,tx+.013,z0+.03,z0+.2,bh+.18,bh+.205,inox); B(tx-.011,tx+.011,z0+.18,z0+.2,bh+.12,bh+.19,inox); } }
+      else if(t==="ll"||t==="coin"){ }   // niche lave-linge / angle aveugle : pas de façade
       else front(a,b,.10,bh-ct,t==="angle"?"v2":"v");
       a=b; } }
   else if(kind==="_dressing"){ const alu=new THREE.MeshStandardMaterial({color:lin("#b9bcbf"),roughness:.3,metalness:.9}), inner=M(hexShade(m.c,-5),.85), fd=z1-.06, zm=(z0+fd)/2, full=!m.cut;

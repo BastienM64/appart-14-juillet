@@ -101,7 +101,12 @@ window.APPART = {
   P.elements = P.elements.filter(e => e.id !== "tableau");
   // 15/10 — porte du cellier décalée vers la droite, là où le rampant laisse passer une porte de ~1,83 m
   // 15/10 — évier centré sur la fenêtre de la cuisine (3,78–4,55 m), robinet sur le côté pour laisser s'ouvrir les vantaux
-  P.elements.find(e => e.id === "cuisine_g").modules = [["angle", 0.89], ["tiroirs", 0.80], ["evier", 0.77, { robinet: "cote" }], ["fileur", 0.06]];
+  // 29/10 — la cuisine se prolonge dans l'ancien cellier (cloisons déposées) : le linéaire du mur gauche part du mur de la salle d'eau,
+  //         angle aveugle puis retour le long de ce mur avec un placard et la niche du lave-linge, jusqu'à la colonne technique
+  Object.assign(P.elements.find(e => e.id === "cuisine_g"), { y: 2.56, d: 3.68,
+    modules: [["angle", 0.89], ["tiroirs", 0.80], ["evier", 0.77, { robinet: "cote" }], ["porte", 0.58], ["coin", 0.64]] });
+  P.elements.push({ id: "cuisine_n", nom: "Cuisine — retour mur salle d'eau (lave-linge)", groupe: "cuisine", type: "cuisine_run", dos: "y0", x: 0.63, y: 2.56, w: 0.97, d: 0.62, z: 0, h: 0.90, couleur: "#e9e6df", plan: "#cfccc4",
+    modules: [["porte", 0.37], ["ll", 0.60]] });
   Object.assign(P.ouvertures.find(o => o.id === "p_cel"), { at: 1.53, sens: 1, fermee: true });   // ouvre côté séjour, fermée par défaut
   window.APPART.variantes.projet = P;
 })();
